@@ -1,0 +1,175 @@
+{
+  "method": "POST",
+  "url": "/api/purchaseorders",
+  "payload": [
+      {
+          "txnGroup": {
+              "participants": []
+          },
+          "orderType": "SA",
+          "orderNumber": "EDI850SUP1910-04",
+          "currency": "USD",
+          "dtm": [
+              {
+                  "dateQualf": "002",
+                  "date": "1997-12-19T00:00:00.000Z"
+              },
+              {
+                  "dateQualf": "004",
+                  "date": "1997-12-19T00:00:00.000Z"
+              },
+          ],
+          "qty": [
+              {
+                  "type": "PO_QTY",
+                  "value": 15,
+                  "uom": "EA"
+              },
+          ],
+          "prices": [
+              {
+                  "type": "AMOUNT",
+                  "value": 1000
+              },
+          ],
+          "paymentTerms": {
+              "terms": "01",
+              "termsDate": "1997-02-14T00:00:00.000Z",
+              "termsBasisDate": 3,
+              "termsDescription": "",
+              "discountDetails": [
+                  {
+                      "termsDiscount": 1,
+                      "termsDays": 16,
+                      "termsDiscountDate": "1997-02-14T00:00:00.000Z",
+                  }
+              ]
+          },
+          "incoTerms": {
+              "incoTerms1": "FCA",
+              "incoTerms2": ""
+          },
+          "ref": [
+              {
+                  "idQualf": "ZF",
+                  "id": "",
+                  "desc": ""
+              },
+              {
+                  "idQualf": "OP",
+                  "id": "54321",
+                  "desc": ""
+              },
+          ],
+          "parties": [
+              {
+                  "partnQualf": "",
+                  "partnerId": "",
+                  "nodeId": ""
+              },
+              {
+                  "partnQualf": "VN",
+                  "partnerId": "1223334444",
+                  "nodeId": "",
+                  "name1": "BUYSNACKS INC.",
+                  "name2": "",
+                  "description": "BUYSNACKS INC.",
+                  "address": {
+                      "address1": "P.O. BOX 0000",
+                      "address2": "",
+                      "houseNum": "",
+                      "city": "TEMPLE",
+                      "state": "TX",
+                      "zip": "76503",
+                      "country": ""
+                  }
+              },
+              {
+                  "partnQualf": "ST",
+                  "partnerId": "1223334445",
+                  "nodeId": "",
+                  "name1": "BUYSNACKS PORT",
+                  "name2": "",
+                  "description": "BUYSNACKS PORT",
+                  "address": {
+                      "address1": "1000 N. SAMPLE HIGHWAY",
+                      "address2": "",
+                      "houseNum": "",
+                      "city": "ATHENS",
+                      "state": "GA",
+                      "zip": "30603",
+                      "country": ""
+                  }
+              },
+          ],
+          "lineItems": [
+              {
+                  "line": "01",
+                  "dtm": [
+                      {
+                          "dateQualf": "002",
+                          "date": "1997-12-19T00:00:00.000Z"
+                      },
+                      {
+                          "dateQualf": "035",
+                          "date": "1997-12-19T00:00:00.000Z"
+                      },
+                  ],
+                  "qty": [
+                      {
+                          "type": "PO_QTY",
+                          "value": 16,
+                          "uom": "EA"
+                      }
+                  ],
+                  "prices": [
+                      {
+                          "type": "UNIT_PRICE",
+                          "value": 100
+                      },
+                  ],
+                  "product": [
+                      {
+                          "productQualf": "VP",
+                          "value": "MPN-001",
+                          "productDescription": ""
+                      },
+                  ]
+              },
+              {
+                  "line": "02",
+                  "dtm": [
+                      {
+                          "dateQualf": "002",
+                          "date": "1997-12-19T00:00:00.000Z"
+                      },
+                      {
+                          "dateQualf": "035",
+                          "date": "1997-12-19T00:00:00.000Z"
+                      },
+                  ],
+                  "qty": [
+                      {
+                          "type": "PO_QTY",
+                          "value": 13,
+                          "uom": "EA"
+                      }
+                  ],
+                  "prices": [
+                      {
+                          "type": "UNIT_PRICE",
+                          "value": 100
+                      },
+                  ],
+                  "product": [
+                      {
+                          "productQualf": "VP",
+                          "value": "MPN-002",
+                          "productDescription": ""
+                      },
+                  ]
+              },
+          ]
+      },
+  ]
+}

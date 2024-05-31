@@ -1,0 +1,61 @@
+// STORED PROCEDURE
+function sp_statusUpdaterAck(groupControlNumber, defaultStatus, failedStatus, partialFailedTxns) {
+    var collection = getContext().getCollection();
+    const requestOptions = { pageSize: 100 };
+    const querySpec = {
+        query: `SELECT * FROM root r WHERE r.edi.groupControlNumber='${groupControlNumber}'`,
+        /*parameters: [
+            { name: "@groupControlNumber", value: groupControlNumber }
+        ]*/
+    }
+    // Query documents and take 1st item.
+    var isAccepted = collection.queryDocuments(
+        collection.getSelfLink(),
+        querySpec,
+        function (err, feed, options) {
+            if (err) throw err;
+
+            // Check the feed and if empty, set the body to 'no docs found', 
+            // else take 1st element from feed
+            if (!feed || !feed.length) {
+                var response = getContext().getResponse();
+                response.setBody(false);
+            }
+            else {
+                var response = getContext().getResponse();
+                updateDocs(feed, requestOptions);
+                response.setBody(true);
+            }
+        });
+
+    function updateDocs(documents, requestOptions) {
+        {
+            if (documents.length > 0) {
+                // Grab the next document to update
+                const doc = documents.pop();
+                requestOptions.accessCondition = { type: "IfMatch", condition: doc._etag };
+                const updateDate = new Date().toISOString();
+
+                const newObj = {};
+                newObj.lastUpdateDateTime = updateDate;
+                const failedTxns = JSON.parse(partialFailedTxns);
+                if (failedTxns.includes(doc.edi.transactionSetControlNumber)) {
+                    newObj.statusCode = failedStatus;
+                } else {
+                    newObj.statusCode = defaultStatus;
+                }
+                Object.assign(doc.edi, newObj);
+
+                collection.replaceDocument(doc._self, doc, requestOptions, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+                    // Call update with remaning documents
+                    updateDocs(documents, requestOptions);
+                });
+            }
+        }
+
+        if (!isAccepted) throw new Error('The query was not accepted by the server.');
+    }
+}

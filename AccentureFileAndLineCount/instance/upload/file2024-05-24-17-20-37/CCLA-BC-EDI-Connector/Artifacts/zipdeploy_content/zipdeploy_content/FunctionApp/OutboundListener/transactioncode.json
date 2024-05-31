@@ -1,0 +1,127 @@
+[
+    {
+        "eventType": "shipment_create",
+        "code": "SH",
+        "prefix": "C"
+    },
+    {
+        "eventType": "shipment_change",
+        "code": "SH",
+        "prefix": "U"
+    },
+    {
+        "code": "SR",
+        "eventType": "serials_create",
+        "prefix": "C"
+    },
+    {
+        "code": "SR",
+        "eventType": "serials_change",
+        "prefix": "U"
+    },
+    {
+        "code": "SR",
+        "eventType": "serials_delete",
+        "prefix": "D"
+    },
+    {
+        "eventType": "shipment_statusupdate",
+        "code": "SH",
+        "prefix": "SU"
+    },
+    {
+        "eventType": "shipment_delete",
+        "code": "SH",
+        "prefix": "D"
+    },
+    {
+        "eventType": "po_create",
+        "code": "PO",
+        "prefix": "C"
+    },
+    {
+        "eventType": "po_change",
+        "code": "PC",
+        "prefix": "U"
+    },
+    {
+        "eventType": "po_statusupdate",
+        "code": "PC",
+        "prefix": "SU"
+    },
+    {
+        "eventType": "po_delete",
+        "code": "PO",
+        "prefix": "D"
+    },
+    {
+        "eventType": "poa_create",
+        "code": "PR",
+        "prefix": "C"
+    },
+    {
+        "eventType": "poa_change",
+        "code": "PR",
+        "prefix": "U"
+    },
+    {
+        "eventType": "poa_statusupdate",
+        "code": "PR",
+        "prefix": "SU"
+    },
+    {
+        "eventType": "invoice_create",
+        "code": "IN",
+        "prefix": "C"
+    },
+    {
+        "eventType": "invoice_change",
+        "code": "IN",
+        "prefix": "U"
+    },
+    {
+        "eventType": "invoice_delete",
+        "code": "IN",
+        "prefix": "D"
+    },
+    {
+        "eventType": "payment_create",
+        "code": "RA",
+        "prefix": "C"
+    },
+    {
+        "eventType": "payment_change",
+        "code": "RA",
+        "prefix": "U"
+    },
+    {
+        "eventType": "payment_delete",
+        "code": "RA",
+        "prefix": "D"
+    },
+    {
+        "eventType": "grn_create",
+        "code": "RC",
+        "prefix": "C"
+    },
+    {
+        "eventType": "grn_change",
+        "code": "RC",
+        "prefix": "U"
+    },
+    {
+        "eventType": "grn_delete",
+        "code": "RC",
+        "prefix": "D"
+    },
+    {
+        "eventType": "invoice_statusupdate",
+        "code": "IN",
+        "prefix": "SU"
+    },
+    {
+        "eventType": "payment_statusupdate",
+        "code": "RA",
+        "prefix": "SU"
+    }
+]

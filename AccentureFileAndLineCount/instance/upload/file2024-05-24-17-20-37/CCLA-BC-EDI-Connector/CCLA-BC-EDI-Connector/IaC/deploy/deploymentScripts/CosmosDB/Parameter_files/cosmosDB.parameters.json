@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "defaultConsistencyLevel": {
+      "value": "Session",
+      "metadata": {
+        "description": "The default consistency level of the Cosmos DB account."
+      }
+    },
+    "maxStalenessPrefix": {
+      "value": 100000,
+      "metadata": {
+        "description": "Max stale requests. Required for BoundedStaleness. Valid ranges, Single Region: 10 to 2147483647. Multi Region: 100000 to 2147483647."
+      }
+    },
+    "maxIntervalInSeconds": {
+      "value": 300,
+      "metadata": {
+        "description": "Max lag time (minutes). Required for BoundedStaleness. Valid ranges, Single Region: 5 to 84600. Multi Region: 300 to 86400."
+      }
+    },
+    "systemManagedFailover": {
+      "value": true,
+      "metadata": {
+        "description": "Enable system managed failover for regions"
+      }
+    },
+    "containerName_outboundevent": {
+      "value": "outboundevent",
+      "metadata": {
+        "description": "The name for the container"
+      }
+    },
+    "containerName_outboundevent_history": {
+      "value": "outboundevent_history"
+    },
+    "throughput": {
+      "value": 400,
+      "metadata": {
+        "description": "The throughput for the container"
+      }
+    }
+  }
+}

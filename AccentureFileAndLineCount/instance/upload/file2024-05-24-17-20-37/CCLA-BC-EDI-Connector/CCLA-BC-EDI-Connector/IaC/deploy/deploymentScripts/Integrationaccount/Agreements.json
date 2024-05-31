@@ -1,0 +1,355 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "agreementName": {
+      "type": "string"
+    },
+    "ediSenderID": {
+      "type": "string"
+    },
+    "ediReceiverID": {
+      "type": "string"
+    },
+    "guest_partnername": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Integration Account Partner Name."
+      }
+    },
+    "guest_partnerqualifier": {
+      "type": "string"
+
+    },
+    "receiveAgreement_schemaReferences": {
+       "type": "array"
+    },
+     "sendAgreement_schemaReferences": {
+       "type": "array"
+    },
+    "guest_partnerqualifiervalue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Provide the Partner Qualifier Value."
+      }
+    },
+    "host_partnername": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Integration Account Partner Name."
+      }
+    },
+    "host_partnerqualifier": {
+      "type": "string"
+    },
+    "host_partnerqualifiervalue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Provide the Partner Qualifier Value."
+      }
+    },
+    "integrationAccountApiVersion": {
+      "type": "string",
+      "defaultValue": "2016-06-01"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location of the Integration Account."
+      }
+    },
+    "integrationaccount_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Integration Account."
+      }
+    },
+   
+    "sku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Free",
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "Specify the Pricing Tier of the Integration Account."
+      }
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('integrationaccount_name')]",
+      "apiVersion": "[parameters('integrationAccountApiVersion')]",
+      "location": "[parameters('location')]",
+      "type": "Microsoft.Logic/IntegrationAccounts",
+      "sku": {
+        "name": "[parameters('sku')]"
+      },
+      "properties": {
+        "state": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Logic/integrationAccounts/partners",
+      "apiVersion": "2016-06-01",
+      "name": "[concat(parameters('integrationaccount_name'),'/',parameters('host_partnername'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/integrationAccounts', parameters('integrationaccount_name'))]"
+      ],
+      "properties": {
+        "partnerType": "B2B",
+        "content": {
+          "b2b": {
+            "businessIdentities": [
+              {
+                "qualifier": "[parameters('Host_partnerqualifier')]",
+                "value": "[parameters('host_partnerqualifiervalue')]"
+              }
+            ],
+            "partnerClassification": "NotSpecified"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Logic/integrationAccounts/partners",
+      "apiVersion": "2016-06-01",
+      "name": "[concat(parameters('integrationaccount_name'),'/',parameters('guest_partnername'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/integrationAccounts', parameters('integrationaccount_name'))]"
+      ],
+      "properties": {
+        "partnerType": "B2B",
+        "content": {
+          "b2b": {
+            "businessIdentities": [
+              {
+                "qualifier": "[parameters('guest_partnerqualifier')]",
+                "value": "[parameters('guest_partnerqualifiervalue')]"
+              }
+            ],
+            "partnerClassification": "NotSpecified"
+          }
+        }
+      }
+    },  
+    {
+      "type": "Microsoft.Logic/integrationAccounts/agreements",
+      "apiVersion": "2016-06-01",
+      "name": "[concat(parameters('integrationaccount_name'),'/',parameters('agreementName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/integrationAccounts', parameters('integrationaccount_name'))]"
+      ],
+      "properties": {
+        "hostPartner": "[parameters('host_partnername')]",
+        "guestPartner": "[parameters('guest_partnername')]",
+        "hostIdentity": {
+          "qualifier": "[parameters('host_partnerqualifier')]",
+          "value": "[parameters('host_partnerqualifiervalue')]"
+        },
+        "guestIdentity": {
+          "qualifier": "[parameters('guest_partnerqualifier')]",
+          "value": "[parameters('guest_partnerqualifiervalue')]"
+        },
+        "agreementType": "X12",
+        "content": {
+          "x12": {
+            "receiveAgreement": {
+              "protocolSettings": {
+                "validationSettings": {
+                  "validateCharacterSet": false,
+                  "checkDuplicateInterchangeControlNumber": false,
+                  "interchangeControlNumberValidityDays": 30,
+                  "checkDuplicateGroupControlNumber": false,
+                  "checkDuplicateTransactionSetControlNumber": false,
+                  "validateEDITypes": true,
+                  "validateXSDTypes": false,
+                  "allowLeadingAndTrailingSpacesAndZeroes": false,
+                  "trimLeadingAndTrailingSpacesAndZeroes": false,
+                  "trailingSeparatorPolicy": "NotAllowed"
+                },
+                "framingSettings": {
+                  "dataElementSeparator": 42,
+                  "componentSeparator": 58,
+                  "replaceSeparatorsInPayload": false,
+                  "replaceCharacter": 36,
+                  "segmentTerminator": 126,
+                  "characterSet": "UTF8",
+                  "segmentTerminatorSuffix": "None"
+                },
+                "envelopeSettings": {
+                  "controlStandardsId": 85,
+                  "useControlStandardsIdAsRepetitionCharacter": false,
+                  "senderApplicationId": "[parameters('ediReceiverID')]",
+                  "receiverApplicationId": "[parameters('ediSenderID')]",
+                  "controlVersionNumber": "00401",
+                  "interchangeControlNumberLowerBound": 1,
+                  "interchangeControlNumberUpperBound": 999999999,
+                  "rolloverInterchangeControlNumber": true,
+                  "enableDefaultGroupHeaders": true,
+                  "groupControlNumberLowerBound": 1,
+                  "groupControlNumberUpperBound": 999999999,
+                  "rolloverGroupControlNumber": true,
+                  "groupHeaderAgencyCode": "X",
+                  "groupHeaderVersion": "004010",
+                  "transactionSetControlNumberLowerBound": 1,
+                  "transactionSetControlNumberUpperBound": 999999999,
+                  "rolloverTransactionSetControlNumber": true,
+                  "overwriteExistingTransactionSetControlNumber": true,
+                  "groupHeaderDateFormat": "CCYYMMDD",
+                  "groupHeaderTimeFormat": "HHMM",
+                  "usageIndicator": "Test"
+                },
+                "acknowledgementSettings": {
+                  "needTechnicalAcknowledgement": true,
+                  "batchTechnicalAcknowledgements": true,
+                  "needFunctionalAcknowledgement": true,
+                  "functionalAcknowledgementVersion": "00401",
+                  "batchFunctionalAcknowledgements": true,
+                  "needImplementationAcknowledgement": false,
+                  "batchImplementationAcknowledgements": false,
+                  "needLoopForValidMessages": false,
+                  "sendSynchronousAcknowledgement": true,
+                  "acknowledgementControlNumberLowerBound": 1,
+                  "acknowledgementControlNumberUpperBound": 999999999,
+                  "rolloverAcknowledgementControlNumber": true
+                },
+                "messageFilter": {
+                  "messageFilterType": "Exclude"
+                },
+                "securitySettings": {
+                  "authorizationQualifier": "00",
+                  "securityQualifier": "00"
+                },
+                "processingSettings": {
+                  "maskSecurityInfo": true,
+                  "convertImpliedDecimal": false,
+                  "preserveInterchange": false,
+                  "suspendInterchangeOnError": false,
+                  "createEmptyXmlTagsForTrailingSeparators": true,
+                  "useDotAsDecimalSeparator": false
+                },
+                "envelopeOverrides": [],
+                "validationOverrides": [],
+                "messageFilterList": [],
+                "schemaReferences": "[parameters('receiveAgreement_schemaReferences')]",
+                "x12DelimiterOverrides": []
+              },
+              "senderBusinessIdentity": {
+                "qualifier": "[parameters('guest_partnerqualifier')]",
+                "value": "[parameters('guest_partnerqualifiervalue')]"
+              },
+              "receiverBusinessIdentity": {
+                "qualifier": "[parameters('host_partnerqualifier')]",
+                "value": "[parameters('host_partnerqualifiervalue')]"
+              }
+            },
+            "sendAgreement": {
+              "protocolSettings": {
+                "validationSettings": {
+                  "validateCharacterSet": false,
+                  "checkDuplicateInterchangeControlNumber": false,
+                  "interchangeControlNumberValidityDays": 30,
+                  "checkDuplicateGroupControlNumber": false,
+                  "checkDuplicateTransactionSetControlNumber": false,
+                  "validateEDITypes": true,
+                  "validateXSDTypes": false,
+                  "allowLeadingAndTrailingSpacesAndZeroes": false,
+                  "trimLeadingAndTrailingSpacesAndZeroes": false,
+                  "trailingSeparatorPolicy": "NotAllowed"
+                },
+                "framingSettings": {
+                  "dataElementSeparator": 42,
+                  "componentSeparator": 58,
+                  "replaceSeparatorsInPayload": false,
+                  "replaceCharacter": 36,
+                  "segmentTerminator": 126,
+                  "characterSet": "UTF8",
+                  "segmentTerminatorSuffix": "None"
+                },
+                "envelopeSettings": {
+                  "controlStandardsId": 85,
+                  "useControlStandardsIdAsRepetitionCharacter": false,
+                  "senderApplicationId": "[parameters('ediSenderID')]",
+                  "receiverApplicationId": "[parameters('ediReceiverID')]",
+                  "controlVersionNumber": "00401",
+                  "interchangeControlNumberLowerBound": 1,
+                  "interchangeControlNumberUpperBound": 999999999,
+                  "rolloverInterchangeControlNumber": true,
+                  "enableDefaultGroupHeaders": true,
+                  "groupControlNumberLowerBound": 1,
+                  "groupControlNumberUpperBound": 999999999,
+                  "rolloverGroupControlNumber": true,
+                  "groupHeaderAgencyCode": "X",
+                  "groupHeaderVersion": "004010",
+                  "transactionSetControlNumberLowerBound": 1,
+                  "transactionSetControlNumberUpperBound": 999999999,
+                  "rolloverTransactionSetControlNumber": true,
+                  "overwriteExistingTransactionSetControlNumber": true,
+                  "groupHeaderDateFormat": "CCYYMMDD",
+                  "groupHeaderTimeFormat": "HHMM",
+                  "usageIndicator": "Test"
+                },
+                "acknowledgementSettings": {
+                  "needTechnicalAcknowledgement": true,
+                  "batchTechnicalAcknowledgements": true,
+                  "needFunctionalAcknowledgement": true,
+                  "functionalAcknowledgementVersion": "00401",
+                  "batchFunctionalAcknowledgements": true,
+                  "needImplementationAcknowledgement": false,
+                  "batchImplementationAcknowledgements": false,
+                  "needLoopForValidMessages": false,
+                  "sendSynchronousAcknowledgement": true,
+                  "acknowledgementControlNumberLowerBound": 1,
+                  "acknowledgementControlNumberUpperBound": 999999999,
+                  "rolloverAcknowledgementControlNumber": true
+                },
+                "messageFilter": {
+                  "messageFilterType": "Exclude"
+                },
+                "securitySettings": {
+                  "authorizationQualifier": "00",
+                  "securityQualifier": "00"
+                },
+                "processingSettings": {
+                  "maskSecurityInfo": true,
+                  "convertImpliedDecimal": false,
+                  "preserveInterchange": false,
+                  "suspendInterchangeOnError": false,
+                  "createEmptyXmlTagsForTrailingSeparators": true,
+                  "useDotAsDecimalSeparator": false
+                },
+                "envelopeOverrides": [],
+                "validationOverrides": [],
+                "messageFilterList": [],
+                "schemaReferences": "[parameters('sendAgreement_schemaReferences')]",
+                "x12DelimiterOverrides": []
+              },
+              "senderBusinessIdentity": {
+                "qualifier": "[parameters('host_partnerqualifier')]",
+                "value": "[parameters('host_partnerqualifiervalue')]"
+              },
+              "receiverBusinessIdentity": {
+                "qualifier": "[parameters('guest_partnerqualifier')]",
+                "value": "[parameters('guest_partnerqualifiervalue')]"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

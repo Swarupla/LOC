@@ -1,0 +1,215 @@
+## Derived variables
+variables:
+
+- name: integrationaccount_name
+  value: $(Components)_IntegrationAccount_$(env)
+
+- name: Acklogicappname
+  value: $(Components)-edi-outbound-ACK-$(env)
+
+- name: Apimname
+  value: $(Components)-edi-apim-$(env)
+
+- name: agreementName
+  value: $(Components)_LSP_Agreement_$(env)
+
+- name: CosmosDatabaseName
+  value: edi
+
+- name: cosmosDB_Name
+  value: $(Components)-edi-cosmosdb-$(env)
+
+- name: Functionapp_name
+  value: $(Components)-edi-Listener-$(env)
+
+- name: Generate_API_logicappname
+  value: $(Components)-edi-Generate-API-Token-$(env)
+
+- name: hostingPlanName
+  value: $(Components)-edi-appservice-plan-$(env)
+
+- name: keyvaultname
+  value: $(Components)-edi-kv-$(env)
+
+- name: inboundlogicappname
+  value: $(Components)-edi-Inbound-$(env)
+
+- name: Outboundlogicappname
+  value: $(Components)-edi-Outbound-$(env)
+
+- name: Senderlogicappname
+  value: $(Components)-edi-Sender-$(env)
+
+- name: servicebusNamespace
+  value: $(Components)-edi-servicebus-$(env)
+
+- name: servicebusQueuename
+  value: $(Components)-edi-servicebus-listener-$(env)
+
+- name: storageAccountName
+  value: sideploymentstoragedev
+
+- name: publisherEmail
+  value: publisherEmail@microsoft.com
+
+- name: ack_logicapp_id
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Logic/workflows/$(Acklogicappname)
+
+- name: inbound_logicapp_id
+  value: https://management.azure.com/subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Logic/workflows/$(inboundlogicappname)
+
+- name: connections_keyvault_externalid
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Web/connections/keyvault_connection
+
+- name: connections_keyvault_externalid1
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Web/connections/keyvault
+
+- name: connections_x12_externalid
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Web/connections/x12
+
+- name: Containers
+  value: outboundevent,outboundevent_history
+
+- name: CosmosDB_scope
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.DocumentDB/databaseAccounts/$(cosmosDB_Name)
+
+- name: cosmosDBprimaryRegion
+  value: $(location)
+
+- name: cosmosDBsecondaryRegion
+  value: eastus
+
+- name: DeploymentPackage
+  value: FunctionApp.zip
+
+- name: documentdb_externalid
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Web/connections/documentdb
+
+- name: EventEndpoint
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.ServiceBus/namespaces/$(servicebusNamespace)/queues/$(servicebusQueuename)
+
+- name: EventSubscriptionName
+  value: $(Components)-edi-servicebus-$(env)
+
+- name: HTTP_Genarate_token_uri
+  value: https://login.microsoftonline.com/$(tenant_Id)/oauth2/v2.0/token?=
+
+- name: keyvault_connection_name
+  value: keyvault_connection
+
+- name: Keyvault_id
+  value: /subscriptions/$(subscription_Id)/providers/Microsoft.Web/locations/eastus/managedApis/keyvault
+
+- name: LogicAppIntegrationAccount
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Logic/integrationAccounts/$(integrationaccount_name)
+
+- name: logAnalyticsWorkspace
+  value: $(Components)-edi-loganalytics-$(env)
+
+- name: map_names
+  value: XSLT_810_Inbound_Mapper,XSLT_810_Outbound_Mapper,XSLT_820_Inbound_mapper,XSLT_820_Outbound_Mapper,XSLT_850_Inbound_Mapper,XSLT_850_Outbound_Mapper,XSLT_855_Inbound_Mapper,XSLT_855_Outbound_Mapper,XSLT_856_Inbound_Mapper,XSLT_856_Outbound_Mapper,XSLT_860_Inbound_Mapper,XSLT_860_Outbound_Mapper,XSLT_861_Inbound_mapper,XSLT_861_Outbound_Mapper
+
+- name: oauth2_service_authorizationEndpoint
+  value: https://login.microsoftonline.com/$(tenant_Id)/oauth2/v2.0/authorize
+
+- name: oauth2_service_tokenEndpoint
+  value: https://login.microsoftonline.com/$(tenant_Id)/oauth2/v2.0/token
+
+- name: openid_config_url
+  value: https://login.microsoftonline.com/$(tenant_Id)/v2.0/.well-known/openid-configuration
+
+- name: roledefinitionid
+  value: 00000000-0000-0000-0000-000000000002
+
+- name: schema_names
+  value: X12_00401_810,X12_00401_820,X12_00401_850,X12_00401_855,X12_00401_856,X12_00401_860,X12_00401_861
+
+- name: sender_LogicappID
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Logic/workflows/$(Senderlogicappname)
+
+- name: servicebus_accesspolicy
+  value: RootManageSharedAccessKey
+
+- name: ServiceBusConnection__fullyQualifiedNamespace
+  value: $(servicebusNamespace).servicebus.windows.net
+
+- name: storageNamePrefix
+  value: $(Components)
+
+- name: token_LogicAppID
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(resourcegroup_name)/providers/Microsoft.Logic/workflows/$(Generate_API_logicappname)
+
+- name: Topic
+  value: /subscriptions/$(subscription_Id)/resourceGroups/$(Event_resourcegroup_name)/providers/Microsoft.EventGrid/topics/$(Event_Grid_Topic)
+
+######## File paths #######
+- name: schemascriptpath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Integrationaccount/schemas-maps.ps1"
+- name: Keyvault_Roleassignment
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Generate_API_Token_logicapp/Keyvault_Roleassignment.ps1"
+- name: Create_keyvault
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Generate_API_Token_logicapp/Create_keyvault.ps1"
+- name: logicappdetails
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/APIM/logicappdetails.ps1"
+- name: APIM_Subkey
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/APIM/APIM_Subkey.sh"
+- name: Apim_ipaddress
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/InboundLogicapp/Apim_ipaddress.ps1"
+- name: Accesspolicy
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Keyvault/Accesspolicy.ps1"
+- name: Functionapp_parameter
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Functionapp/Functionapp_parameters.ps1"
+- name: UpdateConfigurations
+  value: "deploy/deploymentScripts/Functionapp/UpdateConfigurations.ps1"
+- name: Servicebus_Roleassignment
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Functionapp/Roleassignment.ps1"
+- name: CosmosDB_SQLRoleassignment
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/CosmosDB/CosmosDB_SQLRoleassignment.ps1"
+- name: CosmosDB_Storedprocedures
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/CosmosDB/Storedprocedures.ps1"
+- name: Functionapp_whitelist
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/OutboundLogicapp/Functionapp_ipaddress.sh"
+- name: Event_Grid_Subsctiption
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Event_Grid_Subsctiption/Event_Grid_Subsctiption.ps1"
+- name: Senderlogicapp_parameter
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Senderlogicapp/Senderlogicapp_parameter.ps1"
+
+- name: integrationAccounttemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Integrationaccount/Agreements.json"
+- name: senderlogicappTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Senderlogicapp/Senderlogicapp.json"
+- name: inBoundTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/InboundLogicapp/inboundLogicApp.json"
+- name: inBound_IpwhitelistTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/InboundLogicapp/inboundLogicApp_Ipwhitelisted.json"
+- name: outBoundTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/OutboundLogicapp/Outbound_LogicApp.json"
+- name: apimTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/APIM/APIM_azuredeploy.json"
+- name: keyvaultTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Keyvault/keyvault_deploy.json"
+- name: keyvaultAPIconnectionTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Keyvault_API_Connection/keyvault_connection_api.json"
+- name: Generate_API_Token_logicappTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Generate_API_Token_logicapp/APIToken_LogicApp.json"
+- name: AckOutboundLogicappTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/AckOutboundLogicapp/Outbound_Ack_LogicApp.json"
+- name: ServicebusTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Servicebus/servicebus.json"
+- name: FunctionappTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Functionapp/functionapp.json"
+- name: CosmosDBTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/CosmosDB/CosmosDB.json"
+- name: AckOutboundTemplateFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/AckOutboundLogicapp/Outbound_Ack_LogicApp.json"
+- name: FuncZipPath
+  value: "$(Agent.BuildDirectory)/zipdeploy_content/FunctionApp.zip"
+
+- name: senderlogicappParameterFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Senderlogicapp/Parameter_files/Senderlogicapp.parameters.json"
+- name: outBoundParameterFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/OutboundLogicapp/Parameter_files/Outbound_LogicApp.parameters.json"
+- name: keyvaultParameterFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Keyvault/Parameter_files/keyvault_deploy.parameters.json"
+- name: CosmosDBParameterFilePath
+  value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/CosmosDB/Parameter_files/cosmosDB.parameters.json"

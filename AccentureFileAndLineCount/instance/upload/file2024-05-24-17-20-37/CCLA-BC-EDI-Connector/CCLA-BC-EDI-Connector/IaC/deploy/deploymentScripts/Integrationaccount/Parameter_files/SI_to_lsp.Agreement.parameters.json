@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "host_partnerqualifier": {
+      "value": "1"
+    },
+    "sku": {
+      "value": "Basic"
+    },
+    "integrationAccountApiVersion": {
+      "value": "2016-06-01"
+    },
+    "receiveAgreement_schemaReferences": {
+       "value": 
+       [
+              {
+                "messageId": "860",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_860"
+              },
+              {
+                "messageId": "861",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_861"
+              },
+              {
+                "messageId": "820",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_820"
+              },
+              {
+                "messageId": "850",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_850"
+              }
+          ]
+    },
+    "SendAgreement_schemaReferences": {
+      "value": [
+              {
+                "messageId": "856",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_856"
+              },
+              {
+                "messageId": "855",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_855"
+              },
+              {
+                "messageId": "810",
+                "schemaVersion": "00401",
+                "schemaName": "X12_00401_810"
+              }
+       ]
+    }   
+  }
+}

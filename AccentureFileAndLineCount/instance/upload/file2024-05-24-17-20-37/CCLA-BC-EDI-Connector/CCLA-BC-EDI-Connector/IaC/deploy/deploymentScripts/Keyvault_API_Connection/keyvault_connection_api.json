@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyvault_connection_name": {     
+      "type": "String"
+    },
+    "keyvaultname": {
+      "type": "string"
+    },
+    "Keyvault_id": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('keyvault_connection_name')]",
+      "location": "eastus",
+      "kind": "V1",
+      "properties": {
+        "displayName": "[parameters('keyvault_connection_name')]",
+        "statuses": [
+          {
+            "status": "Ready"
+          }
+        ],
+        "connectionState": "Enabled",
+        "parameterValueSet": {
+          "name": "oauthMI",
+          "values": {
+            "vaultName": {
+              "value": "[parameters('keyvaultname')]"
+            }
+          }
+        },
+        "customParameterValues": {},
+        "api": {
+          "name": "keyvault",
+          "displayName": "Azure Key Vault",
+          "description": "Azure Key Vault is a service to securely store and access secrets.",
+          "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1613/1.0.1613.3125/keyvault/icon.png",
+          "brandColor": "#0079d6",
+          "id": "[parameters('Keyvault_id')]",
+          "type": "Microsoft.Web/locations/managedApis"
+        },
+        "testLinks": []
+      }
+    }
+  ]
+}

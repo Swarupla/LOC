@@ -1,0 +1,1075 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "inboundlogicappname": {
+            "type": "string",
+            "minLength": 1
+        },
+        "location": {
+            "type": "string",
+            "minLength": 1
+        },
+        "token_LogicAppID": {
+            "type": "string"
+        },
+        "Senderlogicappname": {
+            "type": "string"
+        },
+        "sender_LogicappID": {
+            "type": "string"
+        },
+        "LogicAppIntegrationAccount": {
+            "type": "string",
+            "minLength": 1
+        },
+        "x12_Connection_Name": {
+            "type": "string"
+        },
+        "x12_Connection_DisplayName": {
+            "type": "string"
+        },
+        "APIHost": {
+            "type": "string"
+        },
+        "cosmosDB_Name": {
+            "type": "string"
+        },
+        "agreementName": {
+            "type": "string"
+        },
+        "APIM_IPaddress": {
+            "type": "string"
+        },
+        "mapper": {
+            "type": "array"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('inboundlogicappname')]",
+            "location": "[parameters('location')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "state": "Enabled",
+                "integrationAccount": {
+                    "id": "[parameters('LogicAppIntegrationAccount')]"
+                },
+                "accessControl": {
+                    "triggers": {
+                        "allowedCallerIpAddresses": [
+                            {
+                                "addressRange": "[concat(parameters('APIM_IPaddress'),'/32')]"
+                            }
+                        ]
+                    },
+                    "actions": {
+                        "allowedCallerIpAddresses": [
+                            {
+                                "addressRange": "[concat(parameters('APIM_IPaddress'),'/32')]"
+                            }
+                        ]
+                    }
+                },
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        },
+                        "AllowSend": {
+                            "defaultValue": true,
+                            "type": "Bool"
+                        },
+                        "agreementName": {
+                            "defaultValue": "[parameters('agreementName')]",
+                            "type": "String"
+                        },
+                        "Host": {
+                            "defaultValue": "[parameters('APIHost')]",
+                            "type": "String"
+                        },
+                        "db-account": {
+                            "defaultValue": "[parameters('cosmosDB_Name')]",
+                            "type": "String"
+                        },
+                        "mapper": {
+                            "defaultValue": "[parameters('mapper')]",
+                            "type": "Array"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {}
+                        }
+                    },
+                    "actions": {
+                        "Catch-Decode-Error": {
+                            "actions": {
+                                "Filter_array": {
+                                    "runAfter": {},
+                                    "type": "Query",
+                                    "inputs": {
+                                        "from": "@result('Try-Decode')",
+                                        "where": "@equals(item()['status'], 'Failed')"
+                                    }
+                                },
+                                "Set_variable_errorMsg-Decode": {
+                                    "runAfter": {
+                                        "Filter_array": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "ErrorMessage",
+                                        "value": "@{body('Filter_array')?[0]?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['errorMessage']}"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Try-Decode": [
+                                    "TimedOut",
+                                    "Failed"
+                                ]
+                            },
+                            "type": "Scope"
+                        },
+                        "Catch_Ack_Send": {
+                            "actions": {
+                                "Filter_array_Ack": {
+                                    "runAfter": {},
+                                    "type": "Query",
+                                    "inputs": {
+                                        "from": "@result('For_each_-_Ack_Send')",
+                                        "where": "@equals(item()['status'], 'Failed')"
+                                    }
+                                },
+                                "Set_variable_errorMsg-Ack": {
+                                    "runAfter": {
+                                        "Filter_array_Ack": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "ErrorMessage",
+                                        "value": "@{body('Filter_array_Ack')?[0]?['error']?['message']}@{body('Filter_array_Ack')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array_Ack')?[0]?['outputs']?['body']?['errorMessage']}"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "For_each_-_Ack_Send": [
+                                    "TimedOut",
+                                    "Failed"
+                                ]
+                            },
+                            "type": "Scope"
+                        },
+                        "Condition_-_Check_Message": {
+                            "actions": {
+                                "Catch_For_each_Good_Message": {
+                                    "actions": {
+                                        "Filter_array_API": {
+                                            "runAfter": {},
+                                            "type": "Query",
+                                            "inputs": {
+                                                "from": "@result('For_each_Good_Message')",
+                                                "where": "@equals(item()['status'], 'Failed')"
+                                            }
+                                        },
+                                        "Set_variable_errorMsg-API": {
+                                            "runAfter": {
+                                                "Filter_array_API": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "ErrorMessage",
+                                                "value": ", @{body('Filter_array_API')?[0]?['outputs']?[0]?['code']}@{body('Filter_array_API')?[0]?['error']?['message']}@{body('Filter_array_API')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array_API')?[0]?['outputs']?['body']?['errorMessage']}"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "For_each_Good_Message": [
+                                            "TimedOut",
+                                            "Failed"
+                                        ]
+                                    },
+                                    "type": "Scope"
+                                },
+                                "Catch_Generate_Token": {
+                                    "actions": {
+                                        "Filter_array_Token": {
+                                            "runAfter": {},
+                                            "type": "Query",
+                                            "inputs": {
+                                                "from": "@result('Try_Generate_Token')",
+                                                "where": "@equals(item()['status'], 'Failed')"
+                                            }
+                                        },
+                                        "Set_variable_errorMsg-Token": {
+                                            "runAfter": {
+                                                "Filter_array_Token": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "ErrorMessage",
+                                                "value": ", @{body('Filter_array_Token')?[0]?['outputs']?[0]?['code']}@{body('Filter_array_Token')?[0]?['error']?['message']}@{body('Filter_array_Token')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array_Token')?[0]?['outputs']?['body']?['errorMessage']}"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Try_Generate_Token": [
+                                            "TimedOut",
+                                            "Failed"
+                                        ]
+                                    },
+                                    "type": "Scope"
+                                },
+                                "For_each_Good_Message": {
+                                    "foreach": "@body('Decode_X12_message')?['GoodMessages']",
+                                    "actions": {
+                                        "API_Call": {
+                                            "runAfter": {
+                                                "Set_HttpURI": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Http",
+                                            "inputs": {
+                                                "body": "@json(body('Transform_XML_To_JSON_Payload')).payload",
+                                                "headers": {
+                                                    "Authorization": "Bearer @{body('Token_logicapp')['access_token']}"
+                                                },
+                                                "method": "@{json(body('Transform_XML_To_JSON_Payload')).method}",
+                                                "retryPolicy": {
+                                                    "count": 5,
+                                                    "interval": "PT60S",
+                                                    "type": "fixed"
+                                                },
+                                                "uri": "@{body('Set_HttpURI')?['value']}"
+                                            },
+                                            "operationOptions": "DisableAsyncPattern"
+                                        },
+                                        "Condition_-_Response": {
+                                            "actions": {
+                                                "Append_to_UUIDs": {
+                                                    "runAfter": {},
+                                                    "type": "AppendToArrayVariable",
+                                                    "inputs": {
+                                                        "name": "UUIDArray",
+                                                        "value": {
+                                                            "message": "@{outputs('API_Call')?['body']?['message']}",
+                                                            "status": "@{outputs('API_Call')?['body']?['status']}",
+                                                            "statusCode": "@{outputs('API_Call')?['statusCode']}",
+                                                            "uuid": "@{outputs('API_Call')?['body']?['data']?['reference']}"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "runAfter": {
+                                                "API_Call": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "else": {
+                                                "actions": {
+                                                    "Append_to_UUIDs_with_empty": {
+                                                        "runAfter": {},
+                                                        "type": "AppendToArrayVariable",
+                                                        "inputs": {
+                                                            "name": "UUIDArray",
+                                                            "value": {
+                                                                "message": "@{outputs('API_Call')?['body']?['message']}",
+                                                                "status": "@{outputs('API_Call')?['body']?['status']}",
+                                                                "statusCode": "@{outputs('API_Call')['statusCode']}",
+                                                                "uuid": ""
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "expression": {
+                                                "and": [
+                                                    {
+                                                        "not": {
+                                                            "equals": [
+                                                                "@body('API_Call')",
+                                                                "@null"
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "type": "If"
+                                        },
+                                        "Get_Object_Keys": {
+                                            "runAfter": {
+                                                "Set_Payload": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "JavaScriptCode",
+                                            "inputs": {
+                                                "code": "var keys = Object.keys(workflowContext.actions.Set_Payload.outputs.body.value)\r\n\r\nreturn keys;"
+                                            }
+                                        },
+                                        "Set_HttpURI": {
+                                            "runAfter": {
+                                                "Transform_XML_To_JSON_Payload": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "HttpURI",
+                                                "value": "@{json(body('Transform_XML_To_JSON_Payload')).url}"
+                                            }
+                                        },
+                                        "Set_Payload": {
+                                            "runAfter": {},
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "Payload",
+                                                "value": "@json(xml(base64ToBinary(items('For_each_Good_Message')?['Payload'])))"
+                                            }
+                                        },
+                                        "Switch": {
+                                            "runAfter": {
+                                                "Get_Object_Keys": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "cases": {
+                                                "Case": {
+                                                    "case": 856,
+                                                    "actions": {
+                                                        "Filter_array_856": {
+                                                            "runAfter": {
+                                                                "Set_variable_856": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query",
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(856))"
+                                                            }
+                                                        },
+                                                        "Set_variable_856": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_856_Inbound_Mapper"
+                                                            }
+                                                        },
+                                                        "Set_variable_MapperParams": {
+                                                            "runAfter": {
+                                                                "Filter_array_856": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_856')?[0]?['Participants']}",
+                                                                    "input:serviceLevel": "@{body('Filter_array_856')?[0]?['ServiceLevel']}",
+                                                                    "input:shipmentType": "@{body('Filter_array_856')?[0]?['ShipmentType']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_856')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_856')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_856')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_856')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_856')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_856')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_856')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_856')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Case_1": {
+                                        "actions": {
+                                            "Filter_array_855": {
+                                                "inputs": {
+                                                    "from": "@parameters('mapper')",
+                                                    "where": "@equals(item()['mapper'], string(855))"
+                                                },
+                                                "runAfter": {
+                                                    "Set_variable_855": [
+                                                        "Succeeded"
+                                                    ]
+                                                },
+                                                "type": "Query"
+                                            },
+                                            "Set_variable_855": {
+                                                "inputs": {
+                                                    "name": "Mapper",
+                                                    "value": "XSLT_855_Inbound_Mapper"
+                                                },
+                                                "runAfter": {},
+                                                "type": "SetVariable"
+                                            },
+                                            "Set_variable_MapperParams_855": {
+                                                "inputs": {
+                                                    "name": "MapperParams",
+                                                    "value": {
+                                                        "input:host": "@{parameters('Host')}",
+                                                        "input:participants": "@{body('Filter_array_855')?[0]?['Participants']}",
+                                                        "input:sourceNodeId": "@{body('Filter_array_855')?[0]?['SourceNodeId']}",
+                                                        "input:sourcePartnQualf": "@{body('Filter_array_855')?[0]?['SourcePartnQualf']}",
+                                                        "input:sourcePartnerId": "@{body('Filter_array_855')?[0]?['SourcePartnerId']}",
+                                                        "input:zfFilterID": "@{body('Filter_array_855')?[0]?['ZFFilterID']}",
+                                                        "input:vendorPartyNodeId": "@{body('Filter_array_855')?[0]?['VendorPartyNodeId']}",
+                                                        "input:shipToNodeId": "@{body('Filter_array_855')?[0]?['ShipToNodeId']}",
+                                                        "input:billToNodeId": "@{body('Filter_array_855')?[0]?['BillToNodeId']}",
+                                                        "input:shipFromNodeId": "@{body('Filter_array_855')?[0]?['ShipFromNodeId']}"
+                                                    }
+                                                },
+                                                "runAfter": {
+                                                    "Filter_array_855": [
+                                                        "Succeeded"
+                                                    ]
+                                                },
+                                                "type": "SetVariable"
+                                            }
+                                        },
+                                        "case": 855
+                                    },
+                                                "Case_2": {
+                                                    "case": 850,
+                                                    "actions": {
+                                                        "Filter_array_850": {
+                                                            "runAfter": {
+                                                                "Set_variable_850": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query",
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(850))"
+                                                            }
+                                                        },
+                                                        "Set_variable_850": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_850_Inbound_Mapper"
+                                                            }
+                                                        },
+                                                        "Set_variable_MapperParams_850": {
+                                                            "runAfter": {
+                                                                "Filter_array_850": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_850')?[0]?['Participants']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_850')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_850')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_850')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_850')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_850')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_850')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_850')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_850')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Case_3": {
+                                                    "case": 860,
+                                                    "actions": {
+                                                        "Filter_array_860": {
+                                                            "runAfter": {
+                                                                "Set_variable_860": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query",
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(860))"
+                                                            }
+                                                        },
+                                                        "Set_variable_860": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_860_Inbound_Mapper"
+                                                            }
+                                                        },
+                                                        "Set_variable_MapperParams_860": {
+                                                            "runAfter": {
+                                                                "Filter_array_860": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_860')?[0]?['Participants']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_860')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_860')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_860')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_860')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_860')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_860')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_860')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_860')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Case_4": {
+                                                    "case": 861,
+                                                    "actions": {
+                                                        "Filter_array_861": {
+                                                            "runAfter": {
+                                                                "Set_variable_861": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query",
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(861))"
+                                                            }
+                                                        },
+                                                        "Set_variable_861": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_861_Inbound_mapper"
+                                                            }
+                                                        },
+                                                        "Set_variable_MapperParams_861": {
+                                                            "runAfter": {
+                                                                "Filter_array_861": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_861')?[0]?['Participants']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_861')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_861')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_861')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_861')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_861')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_861')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_861')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_861')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Case_5": {
+                                                    "case": 820,
+                                                    "actions": {
+                                                        "Filter_array_820": {
+                                                            "runAfter": {
+                                                                "Set_variable_820": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query",
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(820))"
+                                                            }
+                                                        },
+                                                        "Set_variable_820": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_820_Inbound_mapper"
+                                                            }
+                                                        },
+                                                        "Set_variable_MapperParams_820": {
+                                                            "runAfter": {
+                                                                "Filter_array_820": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_820')?[0]?['Participants']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_820')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_820')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_820')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_820')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_820')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_820')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_820')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_820')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Case_6": {
+                                                    "actions": {
+                                                        "Filter_array_810": {
+                                                            "inputs": {
+                                                                "from": "@parameters('mapper')",
+                                                                "where": "@equals(item()['mapper'], string(810))"
+                                                            },
+                                                            "runAfter": {
+                                                                "Set_variable_810": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "Query"
+                                                        },
+                                                        "Set_variable_810": {
+                                                            "inputs": {
+                                                                "name": "Mapper",
+                                                                "value": "XSLT_810_Inbound_mapper"
+                                                            },
+                                                            "runAfter": {},
+                                                            "type": "SetVariable"
+                                                        },
+                                                        "Set_variable_MapperParams_810": {
+                                                            "inputs": {
+                                                                "name": "MapperParams",
+                                                                "value": {
+                                                                    "input:host": "@{parameters('Host')}",
+                                                                    "input:participants": "@{body('Filter_array_810')?[0]?['Participants']}",
+                                                                    "input:sourceNodeId": "@{body('Filter_array_810')?[0]?['SourceNodeId']}",
+                                                                    "input:sourcePartnQualf": "@{body('Filter_array_810')?[0]?['SourcePartnQualf']}",
+                                                                    "input:sourcePartnerId": "@{body('Filter_array_810')?[0]?['SourcePartnerId']}",
+                                                                    "input:zfFilterID": "@{body('Filter_array_810')?[0]?['ZFFilterID']}",
+                                                                    "input:vendorPartyNodeId": "@{body('Filter_array_810')?[0]?['VendorPartyNodeId']}",
+                                                                    "input:shipToNodeId": "@{body('Filter_array_810')?[0]?['ShipToNodeId']}",
+                                                                    "input:billToNodeId": "@{body('Filter_array_810')?[0]?['BillToNodeId']}",
+                                                                    "input:shipFromNodeId": "@{body('Filter_array_810')?[0]?['ShipFromNodeId']}"
+                                                                }
+                                                            },
+                                                            "runAfter": {
+                                                                "Filter_array_810": [
+                                                                    "Succeeded"
+                                                                ]
+                                                            },
+                                                            "type": "SetVariable"
+                                                        }
+                                                    },
+                                                    "case": 810
+                                                }
+                                            },
+                                            "default": {
+                                                "actions": {}
+                                            },
+                                            "expression": "@int(variables('Payload')?[body('Get_Object_Keys')?[0]]?['ST']?['ST01'])",
+                                            "type": "Switch"
+                                        },
+                                        "Transform_XML_To_JSON_Payload": {
+                                            "runAfter": {
+                                                "Switch": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Xslt",
+                                            "inputs": {
+                                                "content": "@{xml(base64ToBinary(items('For_each_Good_Message')?['Payload']))}",
+                                                "integrationAccount": {
+                                                    "map": {
+                                                        "name": "@variables('Mapper')"
+                                                    }
+                                                },
+                                                "transformOptions": "GenerateTextOutput",
+                                                "xsltParameters": "@variables('MapperParams')"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Catch_Generate_Token": [
+                                            "Skipped"
+                                        ]
+                                    },
+                                    "type": "Foreach",
+                                    "runtimeConfiguration": {
+                                        "concurrency": {
+                                            "repetitions": 1
+                                        }
+                                    }
+                                },
+                                "Try_Generate_Token": {
+                                    "actions": {
+                                        "Token_logicapp": {
+                                            "runAfter": {},
+                                            "type": "Workflow",
+                                            "inputs": {
+                                                "body": {},
+                                                "host": {
+                                                    "triggerName": "manual",
+                                                    "workflow": {
+                                                        "id": "[parameters('token_LogicAppID')]"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Scope"
+                                }
+                            },
+                            "runAfter": {
+                                "Catch-Decode-Error": [
+                                    "Skipped"
+                                ]
+                            },
+                            "else": {
+                                "actions": {
+                                    "Set_errorMessage-Empty": {
+                                        "runAfter": {},
+                                        "type": "SetVariable",
+                                        "inputs": {
+                                            "name": "ErrorMessage",
+                                            "value": "No valid message found."
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@body('Decode_X12_message')?['GoodMessages']",
+                                                "@null"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "greater": [
+                                            "@length(body('Decode_X12_message')?['GoodMessages'])",
+                                            0
+                                        ]
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "Condition_-_Operation_Success": {
+                            "actions": {},
+                            "runAfter": {
+                                "Catch_Ack_Send": [
+                                    "Succeeded",
+                                    "Skipped",
+                                    "TimedOut",
+                                    "Failed"
+                                ],
+                                "For_each_Bad_Message": [
+                                    "Succeeded",
+                                    "Skipped",
+                                    "TimedOut",
+                                    "Failed"
+                                ]
+                            },
+                            "else": {
+                                "actions": {
+                                    "Terminate": {
+                                        "runAfter": {},
+                                        "type": "Terminate",
+                                        "inputs": {
+                                            "runError": {
+                                                "code": "400",
+                                                "message": "@variables('ErrorMessage')"
+                                            },
+                                            "runStatus": "Failed"
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "equals": [
+                                            "@length(variables('BadMessageList'))",
+                                            0
+                                        ]
+                                    },
+                                    {
+                                        "equals": [
+                                            "@variables('ErrorMessage')",
+                                            ""
+                                        ]
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "For_each_-_Ack_Send": {
+                            "foreach": "@body('Decode_X12_message')?['GeneratedAcks']",
+                            "actions": {
+                                "Encode_to_X12_message_by_agreement_name": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": "@xml(base64ToBinary(items('For_each_-_Ack_Send')?['ackPayload']))",
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['x12']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/encode/resolvebyname",
+                                        "queries": {
+                                            "agreementName": "[parameters('agreementName')]"
+                                        }
+                                    }
+                                },
+                                "[parameters('Senderlogicappname')]": {
+                                    "runAfter": {
+                                        "Encode_to_X12_message_by_agreement_name": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Workflow",
+                                    "inputs": {
+                                        "body": {
+                                            "allowSend": "@parameters('AllowSend')",
+                                            "payload": "@body('Encode_to_X12_message_by_agreement_name')?['Payload']",
+                                            "source": "inbound"
+                                        },
+                                        "host": {
+                                            "triggerName": "manual",
+                                            "workflow": {
+                                                "id": "[parameters('sender_LogicappID')]"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Catch-Decode-Error": [
+                                    "Skipped"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "For_each_Bad_Message": {
+                            "foreach": "@body('Decode_X12_message')?['BadMessages']",
+                            "actions": {
+                                "Append_to_array_BadMessageList": {
+                                    "runAfter": {},
+                                    "type": "AppendToArrayVariable",
+                                    "inputs": {
+                                        "name": "BadMessageList",
+                                        "value": "@items('For_each_Bad_Message')?['Exception']"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Condition_-_Check_Message": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "Initialize_BadMessageList": {
+                            "runAfter": {
+                                "Initialize_UUIDlist": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "BadMessageList",
+                                        "type": "array",
+                                        "value": []
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_ErrorMessage": {
+                            "runAfter": {
+                                "Initialize_BadMessageList": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "ErrorMessage",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_HttpURI": {
+                            "runAfter": {
+                                "Initialize_MapperParams": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "HttpURI",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Mapper": {
+                            "runAfter": {
+                                "Initialize_Payload": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Mapper",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_MapperParams": {
+                            "runAfter": {
+                                "Initialize_Mapper": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "MapperParams",
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Payload": {
+                            "runAfter": {
+                                "Initialize_ErrorMessage": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Payload",
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_UUIDlist": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "UUIDArray",
+                                        "type": "array",
+                                        "value": []
+                                    }
+                                ]
+                            }
+                        },
+                        "Try-Decode": {
+                            "actions": {
+                                "Decode_X12_message": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": "@triggerBody()",
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['x12']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/decode"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Initialize_HttpURI": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Scope"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "x12": {
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/', 'x12')]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('x12_Connection_Name'))]",
+                                "connectionName": "[parameters('x12_Connection_Name')]"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "MICROSOFT.WEB/CONNECTIONS",
+            "apiVersion": "2018-07-01-preview",
+            "name": "[parameters('x12_Connection_Name')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/', 'x12')]"
+                },
+                "displayName": "[parameters('x12_Connection_DisplayName')]",
+                "parameterValues": {
+                    "integrationAccountId": "[parameters('LogicAppIntegrationAccount')]",
+                    "integrationAccountUrl": "[listCallbackURL(parameters('LogicAppIntegrationAccount'), '2015-08-01-preview').value]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

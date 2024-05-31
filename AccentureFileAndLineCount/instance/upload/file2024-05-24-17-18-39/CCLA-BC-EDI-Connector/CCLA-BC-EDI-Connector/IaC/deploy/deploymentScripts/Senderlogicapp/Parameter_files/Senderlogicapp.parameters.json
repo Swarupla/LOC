@@ -1,0 +1,127 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "documentdb_Connection_DisplayName": {
+      "value": "documentdb"
+    },
+    "CosmosSPName": {
+      "value": "sp_statusUpdater"
+    },
+    "DefaultCollection": {
+      "value": "outboundevent"
+    },
+    "DefaultHistoryCollection": {
+      "value": "outboundevent_history"
+    },
+    "EventCode": {
+      "value": [
+                                {
+                                    "code": "SH",
+                                    "eventType": "shipment_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "SH",
+                                    "eventType": "shipment_update",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "SH",
+                                    "eventType": "shipment_statusupdate",
+                                    "prefix": "SU"
+                                },
+                                {
+                                    "code": "SH",
+                                    "eventType": "shipment_delete",
+                                    "prefix": "D"
+                                },
+                                {
+                                    "code": "PO",
+                                    "eventType": "po_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "PC",
+                                    "eventType": "po_change",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "PC",
+                                    "eventType": "po_statusupdate",
+                                    "prefix": "SU"
+                                },
+                                {
+                                    "code": "PO",
+                                    "eventType": "po_delete",
+                                    "prefix": "D"
+                                },
+                                {
+                                    "code": "PR",
+                                    "eventType": "poa_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "PR",
+                                    "eventType": "poa_change",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "SU",
+                                    "eventType": "poa_statusupdate",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "IN",
+                                    "eventType": "invoice_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "IN",
+                                    "eventType": "invoice_change",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "IN",
+                                    "eventType": "invoice_delete",
+                                    "prefix": "D"
+                                },
+                                {
+                                    "code": "RA",
+                                    "eventType": "payment_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "RA",
+                                    "eventType": "payment_change",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "RC",
+                                    "eventType": "grn_create",
+                                    "prefix": "C"
+                                },
+                                {
+                                    "code": "RC",
+                                    "eventType": "grn_change",
+                                    "prefix": "U"
+                                },
+                                {
+                                    "code": "RC",
+                                    "eventType": "grn_delete",
+                                    "prefix": "D"
+                                },
+                                {
+                                    "code": "IN",
+                                    "eventType": "invoice_statusupdate",
+                                    "prefix": "SU"
+                                },
+                               {
+                                    "code": "RA",
+                                    "eventType": "payment_statusupdate",                         
+                                    "prefix": "SU"
+                                }
+      ]
+    }
+  }
+}

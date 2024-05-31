@@ -1,0 +1,110 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+     "x12_Connection_Name": {
+      "value": "x12"
+    },
+    "x12_Connection_DisplayName": {
+      "value": "EDI_Connection"
+    },
+    "mapper": {
+      "value": [
+        {
+          "Participants": "'a001','a002'",
+          "ShipmentType": "S",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "856",
+          "serviceLevel": "",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "850",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "860",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "ShipmentType": "S",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "861",
+          "serviceLevel": "",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "ShipmentType": "S",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "820",
+          "serviceLevel": "",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "ShipmentType": "S",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "810",
+          "serviceLevel": "",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        },
+        {
+          "Participants": "'a001','a002'",
+          "ShipmentType": "S",
+          "SourceNodeId": "A020",
+          "SourcePartnQualf": "Z2",
+          "SourcePartnerId": "Partner ID",
+          "ZFFilterID": "T2",
+          "mapper": "855",
+          "serviceLevel": "",
+          "ShipToNodeId" : "",
+          "BillToNodeId" : "",
+          "VendorPartyNodeId" : "",
+          "ShipFromNodeId" : ""
+        }
+      ]
+    }
+  }
+}

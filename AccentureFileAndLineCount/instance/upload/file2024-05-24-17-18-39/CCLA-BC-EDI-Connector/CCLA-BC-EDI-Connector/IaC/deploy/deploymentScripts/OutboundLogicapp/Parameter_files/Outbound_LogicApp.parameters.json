@@ -1,0 +1,151 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "documentdb_Connection_DisplayName": {
+            "value": "documentdb"
+        },
+        "x12_Connection_DisplayName": {
+            "value": "x12"
+        },
+        "EventList": {
+            "value": [
+                {
+                    "code": "C",
+                    "container": "shipments",
+                    "eventName": "shipment_create",
+                    "mapper": "XSLT_856_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "shipments",
+                    "eventName": "shipment_change",
+                    "mapper": "XSLT_856_Outbound_Mapper"
+                },
+                {
+                    "code": "SU",
+                    "container": "shipments",
+                    "eventName": "shipment_statusupdate",
+                    "mapper": "XSLT_856_Outbound_Mapper"
+                },
+                {
+                    "code": "D",
+                    "container": "shipments",
+                    "eventName": "shipment_delete",
+                    "mapper": "XSLT_856_Outbound_Mapper"
+                },
+                {
+                    "code": "C",
+                    "container": "purchaseorders",
+                    "eventName": "po_create",
+                    "mapper": "XSLT_850_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "purchaseorders",
+                    "eventName": "po_change",
+                    "mapper": "XSLT_860_Outbound_Mapper"
+                },
+                {
+                    "code": "SU",
+                    "container": "purchaseorders",
+                    "eventName": "po_statusupdate",
+                    "mapper": "XSLT_860_Outbound_Mapper"
+                },
+                {
+                    "code": "D",
+                    "container": "purchaseorders",
+                    "eventName": "po_delete",
+                    "mapper": "XSLT_850_Outbound_Mapper"
+                },
+                {
+                    "code": "C",
+                    "container": "purchaseorders",
+                    "eventName": "poa_create",
+                    "mapper": "XSLT_855_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "purchaseorders",
+                    "eventName": "poa_change",
+                    "mapper": "XSLT_855_Outbound_Mapper"
+                },
+                {
+                    "code": "SU",
+                    "container": "purchaseorders",
+                    "eventName": "poa_statusupdate",
+                    "mapper": "XSLT_855_Outbound_Mapper"
+                },
+                {
+                    "code": "C",
+                    "container": "invoices",
+                    "eventName": "invoice_create",
+                    "mapper": "XSLT_810_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "invoices",
+                    "eventName": "invoice_change",
+                    "mapper": "XSLT_810_Outbound_Mapper"
+                },
+                {
+                    "code": "D",
+                    "container": "invoices",
+                    "eventName": "invoice_delete",
+                    "mapper": "XSLT_810_Outbound_Mapper"
+                },
+                {
+                    "code": "C",
+                    "container": "goodsreceipts",
+                    "eventName": "grn_create",
+                    "mapper": "XSLT_861_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "goodsreceipts",
+                    "eventName": "grn_change",
+                    "mapper": "XSLT_861_Outbound_Mapper"
+                },
+                {
+                    "code": "D",
+                    "container": "goodsreceipts",
+                    "eventName": "grn_delete",
+                    "mapper": "XSLT_861_Outbound_Mapper"
+                },
+                {
+                    "code": "C",
+                    "container": "payments",
+                    "eventName": "payment_create",
+                    "mapper": "XSLT_820_Outbound_Mapper"
+                },
+                {
+                    "code": "U",
+                    "container": "payments",
+                    "eventName": "payment_change",
+                    "mapper": "XSLT_820_Outbound_Mapper"
+                },
+                {
+                    "code": "SU",
+                    "container": "invoices",
+                    "eventName": "invoice_statusupdate",
+                    "mapper": "XSLT_810_Outbound_Mapper"
+                },
+                {
+                    "code": "SU",
+                    "container": "payments",
+                    "eventName": "payment_statusupdate",
+                    "mapper": "XSLT_820_Outbound_Mapper"
+                }
+            ]
+        },
+        "CosmosSPName": {
+            "value": "sp_statusUpdater"
+        },
+        "DefaultCollection": {
+            "value": "outboundevent"
+        },
+        "DefaultHistoryCollection": {
+            "value": "outboundevent_history"
+        }
+    }
+}

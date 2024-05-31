@@ -1,0 +1,335 @@
+<data>
+    <createdBy>a002</createdBy>
+    <shipmentDetails>
+      <serviceLevel>S</serviceLevel>
+      <mode>O</mode>
+    </shipmentDetails>
+    <shipmentType>S</shipmentType>
+    <shipmentNumber>SHPMNT-29092022-005143</shipmentNumber>
+    <ref>
+      <idQualf>OP</idQualf>
+      <id>FEDEX123</id>
+    </ref>
+    <ref>
+      <idQualf>LTN</idQualf>
+      <id>FEDEX12345</id>
+    </ref>
+    <ref>
+      <idQualf>ZF</idQualf>
+      <id>SI</id>
+    </ref>
+    <coo>US</coo>
+    <dtm>
+      <dateQualf>011</dateQualf>
+      <date>2022-08-13T00:00:00.000Z</date>
+    </dtm>
+    <dtm>
+      <dateQualf>017</dateQualf>
+      <date>2022-11-13T00:00:00.000Z</date>
+    </dtm>
+    <txt>
+      <txtQualf>OTH</txtQualf>
+      <text>Some text</text>
+      <lang>en</lang>
+    </txt>
+    <parties>
+      <partnQualf>CA</partnQualf>
+      <partnerId>ZZ</partnerId>
+      <nodeId>TEST</nodeId>
+      <name1>Carrier</name1>
+      <name2>Carrier</name2>
+      <description>Carrier To Details</description>
+      <address>
+        <address1>123 Any Street</address1>
+        <address2>Building 5</address2>
+        <houseNum>HN-01</houseNum>
+        <city>San Diego</city>
+        <state>CA</state>
+        <zip>z92022</zip>
+        <country>US</country>
+      </address>
+    </parties>
+    <parties>
+      <partnQualf>SF</partnQualf>
+      <partnerId>ZZ</partnerId>
+      <nodeId>TEST</nodeId>
+      <name1>Ship From</name1>
+      <name2>Ship From</name2>
+      <description>Ship From Details</description>
+      <address>
+        <address1>123 Any Street</address1>
+        <address2>Building 5</address2>
+        <houseNum>HN-01</houseNum>
+        <city>San Diego</city>
+        <state>CA</state>
+        <zip>z92022</zip>
+        <country>US</country>
+      </address>
+    </parties>
+    <parties>
+      <partnQualf>ST</partnQualf>
+      <partnerId>ZZ</partnerId>
+      <nodeId>TEST</nodeId>
+      <name1>Ship To</name1>
+      <name2>Ship To</name2>
+      <description>Ship To Details</description>
+      <address>
+        <address1>1234 Any Street</address1>
+        <address2>Building 6</address2>
+        <houseNum>HN-01</houseNum>
+        <city>San Diego</city>
+        <state>CA</state>
+        <zip>z92022</zip>
+        <country>US</country>
+      </address>
+    </parties>
+    <handlingUnits>
+      <huPallet>
+        <count>1</count>
+        <pallet>
+          <palletId>PALLET-123</palletId>
+          <palletIdQualf>AA</palletIdQualf>
+          <count>1</count>
+          <carton>
+            <cartonId>CARTON-1001</cartonId>
+            <cartonIdQualf>AA</cartonIdQualf>
+            <coo>US</coo>
+            <ref>
+              <cartonQualf>PJ</cartonQualf>
+              <value>2211</value>
+            </ref>
+            <contents>
+              <shipmentLineId>1</shipmentLineId>
+              <quantity>0</quantity>
+            </contents>
+          </carton>
+          <carton>
+            <cartonId>CARTON-1002</cartonId>
+            <cartonIdQualf>AA</cartonIdQualf>
+            <coo>US</coo>
+            <ref>
+              <cartonQualf>PJ</cartonQualf>
+              <value>2211</value>
+            </ref>
+            <contents>
+              <shipmentLineId>1</shipmentLineId>
+              <quantity>0</quantity>
+            </contents>
+            <contents>
+              <shipmentLineId>2</shipmentLineId>
+              <quantity>0</quantity>
+            </contents>
+            <contents>
+              <shipmentLineId>3</shipmentLineId>
+              <quantity>0</quantity>
+            </contents>
+          </carton>
+        </pallet>
+      </huPallet>
+      <huCarton>
+        <count>1</count>
+        <carton>
+          <cartonId>CARTON-1003</cartonId>
+          <cartonIdQualf>AA</cartonIdQualf>
+          <coo>US</coo>
+          <ref>
+            <cartonQualf>PJ</cartonQualf>
+            <value>2211</value>
+          </ref>
+          <contents>
+            <shipmentLineId>1</shipmentLineId>
+            <quantity>0</quantity>
+          </contents>
+        </carton>
+        <carton>
+          <cartonId>CARTON-1004</cartonId>
+          <cartonIdQualf>AA</cartonIdQualf>
+          <coo>US</coo>
+          <ref>
+            <cartonQualf>PJ</cartonQualf>
+            <value>2211</value>
+          </ref>
+          <contents>
+            <shipmentLineId>4</shipmentLineId>
+            <quantity>0</quantity>
+          </contents>
+          <contents>
+            <shipmentLineId>5</shipmentLineId>
+            <quantity>0</quantity>
+          </contents>
+          <contents>
+            <shipmentLineId>6</shipmentLineId>
+            <quantity>0</quantity>
+          </contents>
+        </carton>
+      </huCarton>
+    </handlingUnits>
+    <lineItems>
+      <line>1</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+      
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>100000</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+    <lineItems>
+      <line>2</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+      
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>10</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+    <lineItems>
+      <line>3</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+      
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>10</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+    <lineItems>
+      <line>4</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+     
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>10</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+    <lineItems>
+      <line>5</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+      
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>10</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+    <lineItems>
+      <line>6</line>
+      <ref>
+        <idQualf>OP</idQualf>
+        <id>PO-05082022-001243</id>
+        <desc>T2 PO Number ref</desc>
+      </ref>
+      <ref>
+        <idQualf>BV</idQualf>
+        <id>1</id>
+      </ref>
+      <product>
+        <productQualf>BP</productQualf>
+        <value>BP Value</value>
+        <productDescription>product description</productDescription>
+      </product>
+      
+      <qty>
+        <type>SHIP_QTY</type>
+        <value>10</value>
+        <uom>EA</uom>
+      </qty>
+      <txt>
+        <txtQualf>PKG</txtQualf>
+        <text>Some text</text>
+        <lang>en</lang>
+      </txt>
+    </lineItems>
+</data>

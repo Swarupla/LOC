@@ -1,0 +1,230 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscription_Id": {
+            "type": "string"
+        },
+        "Functionapp_name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "resourcegroup_name": {
+            "type": "string"
+        },
+        "storageNamePrefix": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace": {
+            "type": "string"
+        },
+        "runtime": {
+            "type": "string",
+          "defaultValue": "node",
+          "allowedValues": [
+            "node",
+            "dotnet",
+            "java"
+          ],
+          "metadata": {
+            "description": "The language worker runtime to load in the function app."
+          }
+      },
+        "ACTIVITY_APP_ENDPOINT_OUTBOUND": {
+            "type": "string"
+       },
+        "CosmosDatabaseName": { "type": "securestring" },
+        "COSMOS_ACCOUNT_HOST": { "type": "securestring" },   
+        "COSMOS_ACCOUNT_KEY": { "type": "securestring" },
+        "SERVICEBUS_CS": { "type": "securestring" },
+        "ServiceBusConnection__fullyQualifiedNamespace": { "type": "securestring" }
+    },
+    "variables": {
+      "Functionapp_name": "[parameters('Functionapp_name')]",
+      "hostingPlanName": "[parameters('hostingPlanName')]",
+      "storageAccountName": "[toLower( concat( parameters('storageNamePrefix'), uniqueString(resourceGroup().id) ) )]",
+      "functionWorkerRuntime": "[parameters('runtime')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[variables('Functionapp_name')]",
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp,linux",
+            "location": "[parameters('location')]",
+            "identity": {
+              "type": "SystemAssigned"
+      },
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('Functionapp_name'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "name": "[variables('Functionapp_name')]",
+                "siteConfig": {
+                    "appSettings": [
+                    {
+                    "name": "ACTIVITY_APP_ENDPOINT_OUTBOUND",
+                    "value": "[parameters('ACTIVITY_APP_ENDPOINT_OUTBOUND')]"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('Functionapp_name'))).InstrumentationKey]"
+                    },
+                    {
+                      "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('Functionapp_name'))).Connectionstring]"
+                    },
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={2};EndpointSuffix={1}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2021-08-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "COSMOS_ACCOUNT_DB",
+                      "value": "[parameters('CosmosDatabaseName')]"
+                    },
+                    {
+                      "name": "COSMOS_ACCOUNT_HOST",
+                      "value": "[parameters('COSMOS_ACCOUNT_HOST')]"
+                    },   
+                    {
+                      "name": "COSMOS_ACCOUNT_KEY",
+                      "value": "[parameters('COSMOS_ACCOUNT_KEY')]"
+                    },        
+                    {
+                      "name": "ENABLE_HISTORY_FEED",
+                      "value": "true"
+                    },
+                    {
+                      "name": "SERVICEBUS_CS",
+                      "value": "[parameters('SERVICEBUS_CS')]"
+                    },
+                    {
+                      "name": "ServiceBusConnection__fullyQualifiedNamespace",
+                      "value": "[parameters('ServiceBusConnection__fullyQualifiedNamespace')]"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "[variables('functionWorkerRuntime')]"
+                    },
+                    {
+                      "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                      "value": "~18.12.1"
+                    },
+                    {
+                      "name": "WEBSITE_RUN_FROM_PACKAGE",
+                      "value": "1"
+                    }
+                    ],
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://ms.portal.azure.com"
+                        ]
+                    },
+                    "use32BitWorkerProcess": "false",
+                    "alwaysOn": true,
+                    "ftpsState": "FtpsOnly",
+                    "linuxFxVersion": "NODE|18"
+                },
+                "serverFarmId": "[concat('/subscriptions/', parameters('subscription_Id'),'/resourcegroups/', parameters('resourcegroup_name'), '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]",
+                "clientAffinityEnabled": false,
+                "virtualNetworkSubnetId": null,
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[variables('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "linux",
+            "tags": null,
+            "dependsOn": [],
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            },
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+            }
+        },
+        {
+          "type": "Microsoft.OperationalInsights/workspaces",
+          "apiVersion": "2021-06-01",
+          "name": "[parameters('logAnalyticsWorkspace')]",
+          "properties": {
+            "features": {
+              "enableLogAccessUsingOnlyResourcePermissions": true,
+              "immediatePurgeDataOn30Days": true,
+              "legacy": 0,
+              "searchVersion": 1
+            },
+            "publicNetworkAccessForIngestion": "Enabled",
+            "publicNetworkAccessForQuery": "Enabled",
+            "retentionInDays": 30,
+            "sku": {
+              "name": "PerGB2018"
+            },
+            "workspaceCapping": {
+              "dailyQuotaGb": -1
+            }
+          },
+          "location": "[parameters('location')]"
+        },
+        {
+            "apiVersion": "2020-02-02-preview",
+            "name": "[variables('Functionapp_name')]",
+            "type": "microsoft.insights/components",
+            "location": "eastus",
+            "tags": null,
+            "dependsOn": [
+              "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspace'))]"
+            ],
+            "properties": {
+                "ApplicationId": "[variables('Functionapp_name')]",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "Flow_Type": "Redfield",
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspace'))]"
+            }
+        },
+        {
+            "apiVersion": "2019-06-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "tags": null,
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2"
+            }
+        }
+    ]
+}

@@ -1,0 +1,342 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {  
+    "Apimname": {
+      "type": "String"
+    },
+    "publisherEmail":{
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "inboundlogicappname": {
+      "type": "String"
+    },
+    "Logicapp_access_key_value": {
+      "type": "securestring"
+    },
+    "serviceUrl_accessEndpoint": {
+      "type": "securestring"
+    },
+    "inbound_logicapp_id": {
+      "type": "securestring"
+    },
+    "oauth2_service_authorizationEndpoint": {
+      "type": "securestring"
+    },
+    "oauth2_service_tokenEndpoint": {
+      "type": "securestring"
+    },
+    "oauth2_service_clientId": {
+      "type": "securestring"
+    },
+    "oauth2_service_clientSecret": {
+      "type": "securestring"
+    },
+    "Acklogicappname": {
+      "type": "String"
+    },
+    "ack_Logicapp_access_key_value": {
+      "type": "securestring"
+    },
+    "ack_serviceUrl_accessEndpoint": {
+      "type": "securestring"
+    },
+    "ack_logicapp_id": {
+      "type": "string"
+    },
+    "tenantID": {
+      "type": "string"
+    },
+    "openid_config_url": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[parameters('Apimname')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic",
+        "capacity": 1
+      },
+      "properties": {
+        "publisherEmail": "[parameters('publisherEmail')]",
+        "publisherName": "[parameters('Apimname')]",
+        "notificationSenderEmail": "apimgmt-noreply@mail.windowsazure.com"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',toLower(parameters('Acklogicappname')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "[parameters('Acklogicappname')]",
+        "apiRevision": "1",
+        "description": "Azure Logic App",
+        "subscriptionRequired": true,
+        "serviceUrl": "[parameters('ack_serviceUrl_accessEndpoint')]",
+        "path": "ackedioutboundlogicapp",
+        "protocols": [
+          "https"
+        ],
+        "isCurrent": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/', toLower(parameters('Acklogicappname')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "description": "[parameters('Acklogicappname')]",
+        "url": "[parameters('ack_serviceUrl_accessEndpoint')]",
+        "protocol": "http",
+        "resourceId": "[concat('https://management.azure.com', parameters('ack_logicapp_id'))]"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/properties",
+      "apiVersion": "2019-01-01",
+      "name": "[concat(parameters('Apimname'), '/ack_logicapp-key')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "ack_logicapp-key",
+        "value": "[parameters('ack_Logicapp_access_key_value')]",
+        "tags": [],
+        "secret": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('Acklogicappname'),'/manual-invoke')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('Acklogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "manual-invoke",
+        "method": "POST",
+        "urlTemplate": "/manual/paths/invoke",
+        "templateParameters": [],
+        "description": "Trigger a run of the logic app.",
+        "request": {
+          "description": "The request body.",
+          "queryParameters": [],
+          "headers": [],
+          "representations": [
+            {
+              "contentType": "application/json",
+              "typeName": "request-manual"
+            }
+          ]
+        },
+        "responses": [
+          {
+            "statusCode": 200,
+            "description": "The Logic App Response.",
+            "representations": [],
+            "headers": []
+          },
+          {
+            "statusCode": 500,
+            "description": "The Logic App Response.",
+            "representations": [],
+            "headers": []
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/policies",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('Acklogicappname'),'/policy')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('Acklogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "value": "[concat('<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service id=\"apim-generated-policy\" backend-id=\"',parameters('Acklogicappname'),'\" />\r\n    <validate-jwt header-name=\"Authorization\" failed-validation-httpcode=\"401\" failed-validation-error-message=\"Unauthorized. Access token is missing or invalid.\">\r\n      <openid-config url=\"',parameters('openid_config_url'),'\" />\r\n      <audiences>\r\n        <audience>',parameters('oauth2_service_clientId'),'</audience>\r\n      </audiences>\r\n    </validate-jwt>\r\n    <set-header name=\"Authorization\" exists-action=\"delete\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>')]",
+        "format": "xml"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('Acklogicappname'),'/manual-invoke/policy')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', parameters('Apimname'), parameters('Acklogicappname'), 'manual-invoke')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('Acklogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "value": "<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-method id=\"apim-generated-policy\">POST</set-method>\r\n    <rewrite-uri id=\"apim-generated-policy\" template=\"/manual/paths/invoke/?api-version=2016-06-01&amp;sp=/triggers/manual/run&amp;sv=1.0&amp;sig={{ack_logicapp-key}}\" />\r\n    <set-header id=\"apim-generated-policy\" name=\"Ocp-Apim-Subscription-Key\" exists-action=\"delete\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',toLower(parameters('inboundlogicappname')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "[parameters('inboundlogicappname')]",
+        "apiRevision": "1",
+        "description": "Azure Logic App.",
+        "subscriptionRequired": true,
+        "serviceUrl": "[parameters('serviceUrl_accessEndpoint')]",
+        "path": "ediinboundlogicapp",
+        "protocols": [
+          "https"
+        ],
+        "isCurrent": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/', toLower(parameters('inboundlogicappname')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "description": "[parameters('inboundlogicappname')]",
+        "url": "[parameters('serviceUrl_accessEndpoint')]",
+        "protocol": "http",
+        "resourceId": "[concat('https://management.azure.com', parameters('inbound_logicapp_id'))]"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/properties",
+      "apiVersion": "2019-01-01",
+      "name": "[concat(parameters('Apimname'), '/inboundlogicapp-key')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "inboundlogicapp-key",
+        "value": "[parameters('Logicapp_access_key_value')]",
+        "tags": [],
+        "secret": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('inboundlogicappname'),'/manual-invoke')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('inboundlogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "manual-invoke",
+        "method": "POST",
+        "urlTemplate": "/manual/paths/invoke",
+        "templateParameters": [],
+        "description": "Trigger a run of the logic app.",
+        "request": {
+          "description": "The request body.",
+          "queryParameters": [],
+          "headers": [],
+          "representations": [
+            {
+              "contentType": "application/json",
+              "typeName": "request-manual"
+            }
+          ]
+        },
+        "responses": [
+          {
+            "statusCode": 200,
+            "description": "The Logic App Response.",
+            "representations": [],
+            "headers": []
+          },
+          {
+            "statusCode": 500,
+            "description": "The Logic App Response.",
+            "representations": [],
+            "headers": []
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/policies",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('inboundlogicappname'),'/policy')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('inboundlogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "value": "[concat('<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service id=\"apim-generated-policy\" backend-id=\"',parameters('inboundlogicappname'),'\" />\r\n    <validate-jwt header-name=\"Authorization\" failed-validation-httpcode=\"401\" failed-validation-error-message=\"Unauthorized. Access token is missing or invalid.\">\r\n      <openid-config url=\"',parameters('openid_config_url'),'\" />\r\n      <audiences>\r\n        <audience>',parameters('oauth2_service_clientId'),'</audience>\r\n      </audiences>\r\n    </validate-jwt>\r\n    <set-header name=\"Authorization\" exists-action=\"delete\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>')]",
+        "format": "xml"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/',parameters('inboundlogicappname'),'/manual-invoke/policy')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', parameters('Apimname'), parameters('inboundlogicappname'), 'manual-invoke')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('Apimname'), parameters('inboundlogicappname'))]",
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "value": "<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-method id=\"apim-generated-policy\">POST</set-method>\r\n    <rewrite-uri id=\"apim-generated-policy\" template=\"/manual/paths/invoke/?api-version=2016-06-01&amp;sp=/triggers/manual/run&amp;sv=1.0&amp;sig={{inboundlogicapp-key}}\" />\r\n    <set-header id=\"apim-generated-policy\" name=\"Ocp-Apim-Subscription-Key\" exists-action=\"delete\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/authorizationServers",
+      "apiVersion": "2022-04-01-preview",
+      "name": "[concat(parameters('Apimname'), '/oauth2-service')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('Apimname'))]"
+      ],
+      "properties": {
+        "displayName": "OAuth2-Service",
+        "clientRegistrationEndpoint": "https://localhost",
+        "authorizationEndpoint": "[parameters('oauth2_service_authorizationEndpoint')]",
+        "authorizationMethods": [
+          "GET"
+        ],
+        "clientAuthenticationMethod": [
+          "Body"
+        ],
+        "tokenBodyParameters": [],
+        "tokenEndpoint": "[parameters('oauth2_service_tokenEndpoint')]",
+        "useInTestConsole": true,
+        "useInApiDocumentation": false,
+        "supportState": false,
+        "grantTypes": [
+          "clientCredentials"
+        ],
+        "bearerTokenSendingMethods": [
+          "authorizationHeader"
+        ],
+        "clientId": "[parameters('oauth2_service_clientId')]",
+        "clientSecret": "[parameters('oauth2_service_clientSecret')]"
+      }
+    }
+  ]
+}

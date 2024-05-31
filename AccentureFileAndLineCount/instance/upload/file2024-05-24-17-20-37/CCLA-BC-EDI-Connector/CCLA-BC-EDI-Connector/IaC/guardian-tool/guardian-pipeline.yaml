@@ -1,0 +1,210 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+trigger: none
+pool:
+  name: 1ES-Guardian
+  #demands:
+  #- agent.version -equals 2.200.2 
+  #- agent.name -equals guardianwinagen
+
+
+
+steps:
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '14.x'
+
+  - task: APIScan@2
+    inputs:
+      softwareFolder: '$(Build.ArtifactStagingDirectory)'
+      softwareName: 'CCLA API Blockchain'
+      softwareVersionNum: '1.0'
+      softwareBuildNum: '$(Build.BuildId)'
+      symbolsFolder: 'SRV*http://symweb'
+      verbosityLevel: standard
+    continueOnError: true
+    enabled: false
+
+  - task: Armory@2
+    inputs:
+      targetDirectory: '$(Build.SourcesDirectory)'
+      targetFiles: 'f|**\*.json;-|.gdn\**;'
+    continueOnError: true
+
+  - task: AntiMalware@4
+    inputs:
+      InputType: 'Basic'
+      ScanType: 'CustomScan'
+      FileDirPath: '$(Build.ArtifactStagingDirectory)'
+      TreatSignatureUpdateFailureAs: 'Warning'
+      SignatureFreshness: 'UpToDate'
+      TreatStaleSignatureAs: 'Error'
+    continueOnError: true
+
+  - task: Bandit@1
+    inputs:
+      targetsType: 'guardianGlob'
+      targets: 'f|**\*.py;-|.gdn\**'
+      ruleset: 'guardian'
+    continueOnError: true
+    enabled: false
+
+  - task: BinSkim@4
+    inputs:
+      InputType: 'Basic'
+      Function: 'analyze'
+      TargetPattern: 'guardianGlob'
+      AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)\**.dll;$(Build.ArtifactStagingDirectory)\**.exe;'
+    continueOnError: true
+    enabled: false
+
+  # #ESRP Code Sign Start
+
+  # - task: EsrpCodeSigning@1
+  #   displayName: 'ESRP CodeSigning'
+  #   enabled: false
+  #   inputs:
+  #     ConnectedServiceName: 'ESRP CodeSigning'
+  #     FolderPath: '$(Build.SourcesDirectory)'
+  #     Pattern: '*.ps1,*.js'
+  #     signConfigType: 'inlineSignParams'
+  #     inlineOperation: |
+  #       [
+  #               {
+  #                   "KeyCode" : "CP-230012",
+  #                   "OperationCode" : "SigntoolSign",
+  #                   "Parameters" : {
+  #                       "OpusName" : "Microsoft",
+  #                       "OpusInfo" : "http://www.microsoft.com",
+  #                       "FileDigest" : "/fd \"SHA256\"",
+  #                       "PageHash" : "/NPH",
+  #                       "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+  #                   },
+  #                   "ToolName" : "sign",
+  #                   "ToolVersion" : "1.0"
+  #               },
+  #               {
+  #                   "KeyCode" : "CP-230012",
+  #                   "OperationCode" : "SigntoolVerify",
+  #                   "Parameters" : {},
+  #                   "ToolName" : "sign",
+  #                   "ToolVersion" : "1.0"
+  #               }
+  #           ]
+  #     SessionTimeout: '60'
+  #     MaxConcurrency: '50'
+  #     MaxRetryAttempts: '5'
+  #   enabled : true
+
+  # - task: CopyFiles@2
+  #   inputs:
+  #     SourceFolder: '$(Build.SourcesDirectory)'
+  #     Contents: '**'
+  #     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  #     CleanTargetFolder: false
+  #     OverWrite: true
+  #   enabled: false
+
+  # - task: CodeSign@1
+  #   inputs:
+  #     Path: '$(Build.ArtifactStagingDirectory)'
+  #     Targets: '**.ps1;**.js'
+  #   continueOnError: false
+  #   enabled: false
+    
+  # #ESRP Code Sign End
+
+  - task: ESLint@1
+    inputs:
+      Configuration: 'required'
+      TargetType: 'eslint'
+      ErrorLevel: 'warn'
+    continueOnError: true  
+
+  - task: CodeInspector@2
+    inputs:
+      ProductId: '0'
+    continueOnError: true
+
+  - task: CredScan@3
+    inputs:
+      outputFormat: 'pre'
+      batchSize: '20'
+      debugMode: true
+    continueOnError: true
+
+  - task: Flawfinder@2
+    inputs:
+      targetPatternType: 'flawfinderPattern'
+      targetFlawfinderPattern: '$(Build.ArtifactStagingDirectory)'
+    continueOnError: true
+
+  - task: PoliCheck@2
+    inputs:
+      targetType: F
+      result: PoliCheck.xml
+      optionsFC: 0
+      optionsXS: 0
+      optionsHMENABLE: 0
+    continueOnError: true
+
+  - task: PSScriptAnalyzer@1
+    inputs:
+      Path: '$(Build.SourcesDirectory)'
+      Settings: 'required'
+      Recurse: true
+
+  - task: Terrascan@3
+    inputs:
+      LogLevel: warn
+
+  - task: TemplateAnalyzer@3
+    inputs:
+      AnalyzeDirectory: '$(Build.ArtifactStagingDirectory)'
+      
+  - task: Semmle@1
+    inputs:
+      sourceCodeDirectory: '$(Build.SourcesDirectory)'
+      language: 'tsandjs'
+      querySuite: 'Recommended'
+      timeout: '1800'
+      ram: '16384'
+      addProjectDirToScanningExclusionList: true
+    enabled: false
+
+  - task: SdtReport@2
+    inputs:
+      GdnExportTsvFile: true
+      GdnExportHtmlFile: true
+      GdnExportOutputBaselineFile: 'myBaseline'
+      GdnExportOutputBaseline: 'myBaselinedResults'
+      GdnExportOutputSuppressionFile: 'mySuppressions'
+      GdnExportOutputSuppressionSet: 'mySuppressionSet'
+      GdnExportPolicyMinSev: 'Warning'
+      GdnExportAllTools: false
+      GdnExportSuppressionFiles: '$(Build.SourcesDirectory)\.gdn\mySuppressions.gdnsuppress'
+    continueOnError: true
+
+  - task: PublishSecurityAnalysisLogs@3
+    inputs:
+      ArtifactName: 'CodeAnalysisLogs'
+      ArtifactType: 'Container'
+      AllTools: true
+      ToolLogsNotFoundAction: 'Standard'
+    continueOnError: true
+
+  - task: TSAUpload@2
+    inputs:
+      GdnPublishTsaOnboard: true
+      GdnPublishTsaConfigFile: '$(Build.sourcesDirectory)\.gdn\.gdntsa'
+    continueOnError: true
+    enabled : false
+
+  - task: PostAnalysis@2
+    inputs:
+      GdnBreakPolicyMinSev: 'Warning'
+      GdnBreakAllTools: false
+    continueOnError: true

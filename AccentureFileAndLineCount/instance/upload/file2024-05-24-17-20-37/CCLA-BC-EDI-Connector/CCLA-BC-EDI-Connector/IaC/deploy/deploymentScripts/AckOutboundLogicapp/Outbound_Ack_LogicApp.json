@@ -1,0 +1,322 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Acklogicappname": {      
+      "type": "String"
+    },
+    "location": {
+      "type": "string"
+    },
+    "documentdb_externalid": {
+      "type": "String"
+    },
+    "connections_x12_externalid": {
+      "type": "String"
+    },
+    "cosmosDB_Name": {
+      "type": "string"
+    },
+    "CosmosDatabaseName": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "[parameters('Acklogicappname')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            },
+            "CosmosAccountName": {
+              "defaultValue": "[parameters('cosmosDB_Name')]",
+              "type": "String"
+            },
+            "CosmosDatabaseName": {
+              "defaultValue": "[parameters('CosmosDatabaseName')]",
+              "type": "String"
+            },
+            "DefaultCollection": {
+              "defaultValue": "outboundevent",
+              "type": "String"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "actions": {
+            "Catch_Cosmos": {
+              "actions": {
+                "Filter_array_cosmos": {
+                  "runAfter": {},
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@result('Scope_Cosmos')",
+                    "where": "@equals(item()?['status'], 'Failed')"
+                  }
+                },
+                "Set_variable_ErrorMessage_Cosmos": {
+                  "runAfter": {
+                    "Filter_array_cosmos": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "ErrorMessage",
+                    "value": "@{body('Filter_array_cosmos')?[0]?['error']?['message']}@{body('Filter_array_cosmos')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array_cosmos')?[0]?['outputs']?['body']?['errorMessage']}"
+                  }
+                }
+              },
+              "runAfter": {
+                "Scope_Cosmos": [
+                  "Failed",
+                  "TimedOut"
+                ]
+              },
+              "type": "Scope"
+            },
+            "Catch_Scope": {
+              "actions": {
+                "Filter_array": {
+                  "runAfter": {},
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@result('Scope')",
+                    "where": "@equals(item()?['status'], 'Failed')"
+                  }
+                },
+                "Set_variable_ErrorMessage": {
+                  "runAfter": {
+                    "Filter_array": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "ErrorMessage",
+                    "value": "@{body('Filter_array')?[0]?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['errorMessage']}"
+                  }
+                },
+                "Set_variable_Status": {
+                  "runAfter": {
+                    "Set_variable_ErrorMessage": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Status",
+                    "value": 5
+                  }
+                }
+              },
+              "runAfter": {
+                "Scope": [
+                  "TimedOut",
+                  "Failed"
+                ]
+              },
+              "type": "Scope"
+            },
+            "Initialize_variable_ErrorMessage": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "ErrorMessage",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "Initialize_variable_Status": {
+              "runAfter": {
+                "Initialize_variable_TransactionSets": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "Status",
+                    "type": "integer",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "Initialize_variable_TransactionSets": {
+              "runAfter": {
+                "Initialize_variable_ErrorMessage": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "TransactionSets",
+                    "type": "array",
+                    "value": []
+                  }
+                ]
+              }
+            },
+            "Scope": {
+              "actions": {
+                "Decode_X12_message": {
+                  "runAfter": {},
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "@triggerBody()",
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['x12']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/decode"
+                  }
+                },
+                "Filter_array_TransactionSets": {
+                  "runAfter": {
+                    "Decode_X12_message": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@split(triggerBody(), '~')",
+                    "where": "@startsWith(trim(item()), 'AK2')"
+                  }
+                },
+                "Prepare_TransactionSets_parameter": {
+                  "foreach": "@outputs('Filter_array_TransactionSets')['body']",
+                  "actions": {
+                    "Append_to_TransactionSets": {
+                      "runAfter": {},
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "TransactionSets",
+                        "value": "@trim(split(items('Prepare_TransactionSets_parameter'), '*')[2])"
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Filter_array_TransactionSets": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Foreach"
+                }
+              },
+              "runAfter": {
+                "Initialize_variable_Status": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Scope"
+            },
+            "Scope_Cosmos": {
+              "actions": {
+                "Update_History_DB_-_Sent": {
+                  "runAfter": {
+                    "Update_Main_DB_-_Sent": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "[[\"@{outputs('Decode_X12_message')['body']['receivedAcks'][0]['functionalAcknowledgement']['header']['aK102']}\", @{variables('Status')}, 4, \"@{replace(string(variables('TransactionSets')), '\"', '\\\"')}\"]",
+                    "headers": {
+                      "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Decode_X12_message')['body']['receivedAcks'][0]['functionalAcknowledgement']['header']['aK101']}\""
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDatabaseName'))}/colls/@{encodeURIComponent(parameters('DefaultCollection'),'_history')}/sprocs/@{encodeURIComponent('sp_statusUpdaterAck')}"
+                  }
+                },
+                "Update_Main_DB_-_Sent": {
+                  "runAfter": {},
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "[[\"@{outputs('Decode_X12_message')['body']['receivedAcks'][0]['functionalAcknowledgement']['header']['aK102']}\", @{variables('Status')}, 4, \"@{replace(string(variables('TransactionSets')), '\"', '\\\"')}\"]",
+                    "headers": {
+                      "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Decode_X12_message')['body']['receivedAcks'][0]['functionalAcknowledgement']['header']['aK101']}\""
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDatabaseName'))}/colls/@{encodeURIComponent(parameters('DefaultCollection'))}/sprocs/@{encodeURIComponent('sp_statusUpdaterAck')}"
+                  }
+                }
+              },
+              "runAfter": {
+                "Catch_Scope": [
+                  "Succeeded",
+                  "Skipped"
+                ]
+              },
+              "type": "Scope"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "documentdb": {
+                "connectionId": "[parameters('documentdb_externalid')]",
+                "connectionName": "documentdb",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity"
+                  }
+                },
+                "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'documentdb')]"
+              },
+              "x12": {
+                "connectionId": "[parameters('connections_x12_externalid')]",
+                "connectionName": "x12",
+                "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'x12')]"
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
+
+  ]
+}

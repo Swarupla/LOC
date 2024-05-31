@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "servicebusNamespace": {
+      "type": "String"
+    },
+    "location": {
+      "type": "string"
+    },
+    "servicebusQueuename": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[parameters('servicebusNamespace')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "properties": {
+        "minimumTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "disableLocalAuth": false,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebusNamespace'), '/RootManageSharedAccessKey')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebusNamespace'))]"
+      ],
+      "properties": {
+        "rights": [
+          "Listen",
+          "Manage",
+          "Send"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/networkRuleSets",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebusNamespace'), '/default')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebusNamespace'))]"
+      ],
+      "properties": {
+        "publicNetworkAccess": "Enabled",
+        "defaultAction": "Allow",
+        "virtualNetworkRules": [],
+        "ipRules": []
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[toLower(concat(parameters('servicebusNamespace'), '/',parameters('servicebusQueuename')))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebusNamespace'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": 256,
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P14D",
+        "deadLetteringOnMessageExpiration": false,
+        "enableBatchedOperations": true,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 1,
+        "status": "Active",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,811 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {   
+    "documentdb_Connection_DisplayName": {
+      "type": "string"
+    },  
+    "connections_keyvault_externalid": {
+      "type": "string"
+    },	  
+      "keyvault_connection_name": {
+      "type": "string"
+    },
+    "keyvault_id": {
+      "type": "string"
+    },    
+    "location": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Senderlogicappname": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cosmosDB_Name": {
+      "type": "string"
+    },
+    "CosmosDatabaseName": {
+      "type": "string"
+    },
+    "CosmosSPName": {
+      "type": "string"
+    },
+    "DefaultCollection": {
+      "type": "string"
+    },
+    "DefaultHistoryCollection": {
+      "type": "string"
+    },
+    "EventCode": {
+      "type": "array"
+    },
+    "OutboundEndpoint": {
+      "type": "string"
+    },
+    "documentdb_externalid": {
+      "type": "string"
+    },
+    "oauth2_service_tokenEndpoint": {
+      "type": "string"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            },
+            "cosmosDB_Name": {
+              "defaultValue": "[parameters('cosmosDB_Name')]",
+              "type": "String"
+            },
+            "CosmosDatabaseName": {
+              "defaultValue": "[parameters('CosmosDatabaseName')]",
+              "type": "String"
+            },
+            "CosmosSPName": {
+              "defaultValue": "[parameters('CosmosSPName')]",
+              "type": "String"
+            },
+            "DefaultCollection": {
+              "defaultValue": "[parameters('DefaultCollection')]",
+              "type": "String"
+            },
+            "DefaultHistoryCollection": {
+              "defaultValue": "[parameters('DefaultHistoryCollection')]",
+              "type": "String"
+            },
+            "EventCode": {
+              "defaultValue": "[parameters('EventCode')]",
+              "type": "Array"
+            },
+            "OutboundEndpoint": {
+              "defaultValue": "[parameters('OutboundEndpoint')]",
+              "type": "String"
+            },
+            "oauth2_service_tokenEndpoint": {
+              "defaultValue": "[parameters('oauth2_service_tokenEndpoint')]",
+              "type": "String"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "actions": {
+            "Condition_Send_Support": {
+              "actions": {
+                "Set_variable_Switch_ResponseCode": {
+                  "runAfter": {
+                    "Switch": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "ResponseCode",
+                    "value": "@int(concat(outputs('HTTP_Outbound')?['statusCode'], outputs('HTTP')?['statusCode']))"
+                  }
+                },
+                "Switch": {
+                  "runAfter": {},
+                  "cases": {
+                    "Case": {
+                      "case": "outbound",
+                      "actions": {
+                        "Catch-Update": {
+                          "actions": {},
+                          "runAfter": {
+                            "Try-Update": [
+                              "TimedOut",
+                              "Failed"
+                            ]
+                          },
+                          "type": "Scope"
+                        },
+                        "Try-Update": {
+                          "actions": {
+                            "Compose": {
+                              "runAfter": {
+                                "Compose_Status": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Compose",
+                              "inputs": "@union(outputs('Compose_Status'), triggerBody()['edi'])"
+                            },
+                            "Compose_Status": {
+                              "runAfter": {
+                                "Condition_Outbound": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Compose",
+                              "inputs": {
+                                "statusCode": "@variables('StatusCode')",
+                                "x-ms-client-tracking-id": "@triggerOutputs()['headers']['x-ms-client-tracking-id']",
+                                "x-ms-correlation-id": "@triggerOutputs()['headers']['x-ms-correlation-id']"
+                              }
+                            },
+                            "Condition_Outbound": {
+                              "actions": {
+                                "Set_variable": {
+                                  "runAfter": {},
+                                  "type": "SetVariable",
+                                  "inputs": {
+                                    "name": "StatusCode",
+                                    "value": 2
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "HTTP_Outbound": [
+                                  "Succeeded",
+                                  "TimedOut",
+                                  "Failed"
+                                ]
+                              },
+                              "else": {
+                                "actions": {
+                                  "Set_variable_2": {
+                                    "runAfter": {},
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                      "name": "StatusCode",
+                                      "value": 5
+                                    }
+                                  }
+                                }
+                              },
+                              "expression": {
+                                        "or": [
+                                                    {
+                                                      "equals": [
+                                                          "@outputs('HTTP_Outbound')['statusCode']",
+                                                          200
+                                                        ]
+                                                    },
+                                                    {
+                                                      "equals": [
+                                                         "@outputs('HTTP_Outbound')['statusCode']",
+                                                          202
+                                                        ]
+                                                    }
+                                               ]
+                              },
+                              "type": "If"
+                            },
+                            "Filter_array": {
+                              "runAfter": {
+                                "Compose": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@parameters('EventCode')",
+                                "where": "@equals(item()?['eventType'], triggerBody()?['eventType'])"
+                              }
+                            },
+                            "Get_erp_apim_sub_key": {
+                              "inputs": {
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                      }
+                                  },
+                                  "method": "get",
+                                  "path": "/secrets/@{encodeURIComponent('erp-apim-sub-key')}/value"
+                              },
+                              "runAfter": {
+                                  "Get_erp_scope": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "runtimeConfiguration": {
+                                  "secureData": {
+                                      "properties": [
+                                          "outputs"
+                                      ]
+                                  }
+                              },
+                              "type": "ApiConnection"
+                          },
+                          "Get_erp_client_id": {
+                              "inputs": {
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                      }
+                                  },
+                                  "method": "get",
+                                  "path": "/secrets/@{encodeURIComponent('erp-client-id')}/value"
+                              },
+                              "runAfter": {},
+                              "runtimeConfiguration": {
+                                  "secureData": {
+                                      "properties": [
+                                          "outputs"
+                                      ]
+                                  }
+                              },
+                              "type": "ApiConnection"
+                          },
+                          "Get_erp_client_secret": {
+                              "inputs": {
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                      }
+                                  },
+                                  "method": "get",
+                                  "path": "/secrets/@{encodeURIComponent('erp-client-secret')}/value"
+                              },
+                              "runAfter": {
+                                  "Get_erp_client_id": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "runtimeConfiguration": {
+                                  "secureData": {
+                                      "properties": [
+                                          "outputs"
+                                      ]
+                                  }
+                              },
+                              "type": "ApiConnection"
+                          },
+                          "Get_erp_scope": {
+                              "inputs": {
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                      }
+                                  },
+                                  "method": "get",
+                                  "path": "/secrets/@{encodeURIComponent('erp-scope')}/value"
+                              },
+                              "runAfter": {
+                                  "Get_erp_client_secret": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "runtimeConfiguration": {
+                                  "secureData": {
+                                      "properties": [
+                                          "outputs"
+                                      ]
+                                  }
+                              },
+                              "type": "ApiConnection"
+                          },
+                          "HTTP_Outbound": {
+                              "inputs": {
+                                  "body": "@decodeBase64(triggerBody()?['payload'])",
+                                  "headers": {
+                                      "Authorization": "Bearer @{body('HTTP_Token')['access_token']}",
+                                      "Content-Type": "text/plain",
+                                      "Ocp-Apim-Subscription-Key": "@body('Get_erp_apim_sub_key')?['value']"
+                                  },
+                                  "method": "POST",
+                                  "uri": "@parameters('OutboundEndpoint')"
+                              },
+                              "runAfter": {
+                                  "HTTP_Token": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "type": "Http"
+                          },
+                          "HTTP_Token": {
+                              "inputs": {
+                                  "body": {
+                                      "$content-type": "multipart/form-data",
+                                      "$multipart": [
+                                          {
+                                              "body": "client_credentials",
+                                              "headers": {
+                                                  "Content-Disposition": "form-data; name=\"grant_type\""
+                                              }
+                                          },
+                                          {
+                                              "body": "@body('Get_erp_client_id')?['value']",
+                                              "headers": {
+                                                  "Content-Disposition": "form-data; name=\"client_id\""
+                                              }
+                                          },
+                                          {
+                                              "body": "@body('Get_erp_client_secret')?['value']",
+                                              "headers": {
+                                                  "Content-Disposition": "form-data; name=\"client_secret\""
+                                              }
+                                          },
+                                          {
+                                              "body": "@body('Get_erp_scope')?['value']",
+                                              "headers": {
+                                                  "Content-Disposition": "form-data; name=\"scope\""
+                                              }
+                                          }
+                                      ]
+                                  },
+                                  "headers": {
+                                      "Content-Type": "multipart/form-data"
+                                  },
+                                  "method": "POST",
+                                  "uri": "@parameters('oauth2_service_tokenEndpoint')"
+                              },
+                              "runAfter": {
+                                  "Get_erp_apim_sub_key": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "runtimeConfiguration": {
+                                  "secureData": {
+                                      "properties": [
+                                          "inputs",
+                                          "outputs"
+                                      ]
+                                  }
+                              },
+                              "type": "Http"
+                          },
+                            "Set_variable_DbParameters": {
+                              "runAfter": {
+                                "Filter_array": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "DbParameters",
+                                "value": [
+                                  "@{outputs('Filter_array')['body']?[0]?['prefix']}|@{triggerBody()['id']}",
+                                  "@{string(outputs('Compose'))}",
+                                  1
+                                ]
+                              }
+                            },
+                            "Update_History_DB": {
+                              "runAfter": {
+                                "Update_Main_DB": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "ApiConnection",
+                              "inputs": {
+                                "body": "@{variables('DbParameters')}",
+                                "headers": {
+                                  "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Filter_array')['body']?[0]?['code']}\""
+                                },
+                                "host": {
+                                  "connection": {
+                                    "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                  }
+                                },
+                                "method": "post",
+                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('cosmosDB_Name'))}/dbs/@{encodeURIComponent(parameters('CosmosDatabaseName'))}/colls/@{encodeURIComponent(parameters('DefaultHistoryCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                              }
+                            },
+                            "Update_Main_DB": {
+                              "runAfter": {
+                                "Set_variable_DbParameters": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "ApiConnection",
+                              "inputs": {
+                                "body": "@{variables('DbParameters')}",
+                                "headers": {
+                                  "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Filter_array')['body']?[0]?['code']}\""
+                                },
+                                "host": {
+                                  "connection": {
+                                    "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                  }
+                                },
+                                "method": "post",
+                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('cosmosDB_Name'))}/dbs/@{encodeURIComponent(parameters('CosmosDatabaseName'))}/colls/@{encodeURIComponent(parameters('DefaultCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                              }
+                            }
+                          },
+                          "runAfter": {},
+                          "type": "Scope"
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {
+                      "Catch-Send": {
+                          "actions": {
+                              "Set_variable_Status_Error": {
+                                  "inputs": {
+                                      "name": "StatusCode",
+                                      "value": 5
+                                  },
+                                  "runAfter": {},
+                                  "type": "SetVariable"
+                              }
+                          },
+                          "runAfter": {
+                              "Try-Send": [
+                                  "TimedOut",
+                                  "Failed"
+                              ]
+                          },
+                          "type": "Scope"
+                      },
+                      "Try-Send": {
+                          "actions": {
+                              "Condition": {
+                                  "actions": {
+                                      "Set_variable_StatusCode": {
+                                          "inputs": {
+                                              "name": "StatusCode",
+                                              "value": 2
+                                          },
+                                          "runAfter": {},
+                                          "type": "SetVariable"
+                                      }
+                                  },
+                                  "else": {
+                                      "actions": {
+                                          "Set_variable_StatusCode_Failed": {
+                                              "inputs": {
+                                                  "name": "StatusCode",
+                                                  "value": 5
+                                              },
+                                              "runAfter": {},
+                                              "type": "SetVariable"
+                                          }
+                                      }
+                                  },
+                                  "expression": {
+                                      "and": [
+                                          {
+                                              "equals": [
+                                                  "@outputs('HTTP')['statusCode']",
+                                                  200
+                                              ]
+                                          }
+                                      ]
+                                  },
+                                  "runAfter": {
+                                      "HTTP": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "If"
+                              },
+                              "Get_erp_apim_sub_key_for_default": {
+                                  "inputs": {
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                          }
+                                      },
+                                      "method": "get",
+                                      "path": "/secrets/@{encodeURIComponent('erp-apim-sub-key')}/value"
+                                  },
+                                  "runAfter": {
+                                      "Get_erp_scope_for_default": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "ApiConnection"
+                              },
+                              "Get_erp_client_id_for_default": {
+                                  "inputs": {
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                          }
+                                      },
+                                      "method": "get",
+                                      "path": "/secrets/@{encodeURIComponent('erp-client-id')}/value"
+                                  },
+                                  "runAfter": {},
+                                  "type": "ApiConnection"
+                              },
+                              "Get_erp_scope_for_default": {
+                                  "inputs": {
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                          }
+                                      },
+                                      "method": "get",
+                                      "path": "/secrets/@{encodeURIComponent('erp-scope')}/value"
+                                  },
+                                  "runAfter": {
+                                      "Get_erp_secret_id_for_default": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "ApiConnection"
+                              },
+                              "Get_erp_secret_id_for_default": {
+                                  "inputs": {
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                          }
+                                      },
+                                      "method": "get",
+                                      "path": "/secrets/@{encodeURIComponent('erp-client-secret')}/value"
+                                  },
+                                  "runAfter": {
+                                      "Get_erp_client_id_for_default": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "ApiConnection"
+                              },
+                              "HTTP": {
+                                "inputs": {
+                                  "body": "@decodeBase64(triggerBody()?['payload'])",
+                                  "headers": {
+                                      "Authorization": "Bearer @{body('HTTP_Token_for_default')['access_token']}",
+                                      "Content-Type": "text/plain",
+                                      "Ocp-Apim-Subscription-Key": "@body('Get_erp_apim_sub_key_for_default')?['value']"
+                                  },
+                                  "method": "POST",
+                                  "uri": "@parameters('OutboundEndpoint')"
+                              },
+                              "runAfter": {
+                                  "HTTP_Token_for_default": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "type": "Http"
+                              },
+                              "HTTP_Token_for_default": {
+                                  "inputs": {
+                                      "body": {
+                                          "$content-type": "multipart/form-data",
+                                          "$multipart": [
+                                              {
+                                                  "body": "client_credentials",
+                                                  "headers": {
+                                                      "Content-Disposition": "form-data; name=\"grant_type\""
+                                                  }
+                                              },
+                                              {
+                                                  "body": "@body('Get_erp_client_id_for_default')?['value']",
+                                                  "headers": {
+                                                      "Content-Disposition": "form-data; name=\"client_id\""
+                                                  }
+                                              },
+                                              {
+                                                  "body": "@body('Get_erp_secret_id_for_default')?['value']",
+                                                  "headers": {
+                                                      "Content-Disposition": "form-data; name=\"client_secret\""
+                                                  }
+                                              },
+                                              {
+                                                  "body": "@body('Get_erp_scope_for_default')?['value']",
+                                                  "headers": {
+                                                      "Content-Disposition": "form-data; name=\"scope\""
+                                                  }
+                                              }
+                                          ]
+                                      },
+                                      "headers": {
+                                          "content-type": "multipart/form-data"
+                                      },
+                                      "method": "POST",
+                                      "uri": "@parameters('oauth2_service_tokenEndpoint')"
+                                  },
+                                  "runAfter": {
+                                      "Get_erp_apim_sub_key_for_default": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "Http"
+                              }
+                          },
+                          "runAfter": {},
+                          "type": "Scope"
+                      }
+                  }
+                  },
+                  "expression": "@triggerBody()?['source']",
+                  "type": "Switch"
+                }
+              },
+              "runAfter": {
+                "Initialize_variable_ResponseCode": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Set_variable_ResponseCode": {
+                    "runAfter": {},
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "ResponseCode",
+                      "value": 200
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@triggerBody()?['allowSend']",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "Initialize_variable_DbParameters": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "DbParameters",
+                    "type": "array",
+                    "value": []
+                  }
+                ]
+              }
+            },
+            "Initialize_variable_Record_StatusCode": {
+              "runAfter": {
+                "Initialize_variable_DbParameters": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "StatusCode",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "Initialize_variable_ResponseCode": {
+              "runAfter": {
+                "Initialize_variable_Record_StatusCode": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "ResponseCode",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "Response": {
+              "runAfter": {
+                "Condition_Send_Support": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": "@variables('ResponseCode')"
+              },
+              "operationOptions": "Asynchronous"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "documentdb": {
+                "connectionId": "[parameters('documentdb_externalid')]",
+                "connectionName": "documentdb",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity"
+                  }
+                },
+                "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'documentdb')]"
+              },
+              "keyvault": {
+                "connectionId": "[parameters('connections_keyvault_externalid')]",
+                "connectionName": "[parameters('keyvault_connection_name')]",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity"
+                  }
+                },
+                "id": "[parameters('keyvault_id')]"
+              }
+            }
+          }
+        },
+        "accessControl": {
+          "triggers": {
+            "allowedCallerIpAddresses": []
+          },
+          "actions": {
+            "allowedCallerIpAddresses": []
+          }
+    }
+      },
+      "name": "[parameters('Senderlogicappname')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "apiVersion": "2016-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', 'documentdb')]"
+      ]
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2018-07-01-preview",
+      "name": "documentdb",
+      "location": "[parameters('location')]",
+      "kind": "V1",
+      "properties": {
+        "api": {
+          "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'documentdb')]"
+        },
+        "customParameterValues": {},
+        "displayName": "[parameters('documentdb_Connection_DisplayName')]",
+        "parameterValueSet": {
+          "name": "managedIdentityAuth",
+          "values": {}
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

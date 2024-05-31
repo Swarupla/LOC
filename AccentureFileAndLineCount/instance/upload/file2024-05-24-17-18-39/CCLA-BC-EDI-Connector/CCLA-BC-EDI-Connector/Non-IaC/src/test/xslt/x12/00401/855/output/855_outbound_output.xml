@@ -1,0 +1,11 @@
+<ns0:X12_00401_855 xmlns:ns0="http://schemas.microsoft.com/BizTalk/EDI/X12/2006">
+    <ST>
+        <ST01>855</ST01>
+        <ST02>00001</ST02>
+    </ST>
+    <ns0:BAK>
+        <BAK01>00</BAK01>
+        <BAK03>6000854126</BAK03>
+        <BAK05>0001</BAK05>
+    </ns0:BAK>
+</ns0:X12_00401_855>

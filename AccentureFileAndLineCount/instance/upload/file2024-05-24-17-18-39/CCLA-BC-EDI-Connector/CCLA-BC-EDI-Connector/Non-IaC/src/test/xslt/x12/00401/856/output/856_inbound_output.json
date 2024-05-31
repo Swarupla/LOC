@@ -1,0 +1,2588 @@
+
+    {
+        
+                "method": "POST",
+                "url": "/api/shipments",
+            
+        "payload": [
+             {
+                "txnGroup": {
+                    "participants": [                        
+                        
+                    ]
+                },
+                "shipmentDetails": [
+                    
+                    {
+                        
+                        "mode": "M"
+                    },
+                    
+                ],
+                "shipmentType": "",
+                "shipmentNumber": "TWG-01-07",
+                
+                    "coo": "US",
+                
+                "ref": [
+                    {
+                        "idQualf": "ZF",
+                        "id": "",
+                        "desc": ""
+                    },
+                    
+                                    {
+                                        "idQualf": "BM",
+                                        "id": "BM HEADER Value",
+                                        "desc": ""
+                                    },
+                                    
+                            {
+                                "idQualf": "OP",
+                                "id": "A99999-01HEADER",
+                                "desc": ""
+                            },
+                        
+                                    {
+                                        "idQualf": "OB",
+                                        "id": "00001",
+                                        "desc": ""
+                                    },
+                                    
+                ],
+                
+                "dtm": 
+        [
+            
+                {
+                    "dateQualf2": "011",
+                    "date": 
+                        "2022-01-11T13:11:00.000Z"
+                    
+                },
+                
+                {
+                    "dateQualf2": "017",
+                    "date": 
+                        "2022-12-11T13:11:23.000Z"
+                    
+                },
+                
+        ]
+    ,
+                "parties": [
+                    {
+                        "partnQualf": "",
+                        "partnerId": "",
+                        "nodeId": ""
+                    },
+                    
+                            {
+                                "partnQualf": "BT",
+                                "partnerId": "1223334444",
+                                "nodeId": "",
+                                
+                                        "name1": "BUYSNACKS",
+                                    
+                                "name2": "",
+                                
+                                        "description": "BUYSNACKS",
+                                    
+                                "address": {
+                                    "address1": "P.O. BOX 0000",
+                                    "address2": "",
+                                    "houseNum": "",
+                                    "city": "TEMPLE",
+                                    "state": "TX",
+                                    "zip": "76503",
+                                    "country": ""
+                                }
+                            },
+                            
+                            {
+                                "partnQualf": "ST",
+                                "partnerId": "1223334445",
+                                "nodeId": "",
+                                
+                                        "name1": "BUYSNACKS PORT",
+                                    
+                                "name2": "",
+                                
+                                        "description": "BUYSNACKS PORT",
+                                    
+                                "address": {
+                                    "address1": "1000 N. SAMPLE HIGHWAY",
+                                    "address2": "",
+                                    "houseNum": "",
+                                    "city": "ATHENS",
+                                    "state": "GA",
+                                    "zip": "30603",
+                                    "country": ""
+                                }
+                            },
+                            
+                ],
+                "lineItems": [
+                    
+                            {
+                                "line": "1",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                                        {
+                                                            "idQualf": "OP",
+                                                            "id": "LIN-REF-01",
+                                                            "desc": ""
+                                                        },
+                                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "2",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "3",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "4",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "5",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "6",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "7",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "21",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "22",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "23",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "24",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "25",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "26",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "27",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "141",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "142",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "143",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "144",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "145",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "146",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "147",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "251",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "252",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "253",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "254",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "255",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "256",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "257",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "31",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "32",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "33",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "34",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "35",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "36",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "37",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "41",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840022222",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L1",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 16,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "42",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840033333",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L2",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 13,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "43",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840044444",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L3",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 32,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "44",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840055555",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L4",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 51,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "45",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840066666",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L5",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 9,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "46",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840077777",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L6",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 85,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                            {
+                                "line": "47",
+                                "ref": [
+                                    {
+                                        "idQualf": "ZF",
+                                        "id": "T2",
+                                        "desc": ""
+                                    },
+                                    
+                                        {
+                                            "idQualf": "OP",
+                                            "id": "A99999-01",
+                                            "desc": ""
+                                        },
+                                    
+                                ],
+                                "product": [
+                                    
+                                    {
+                                        "productQualf": "VP",
+                                        "value": "002840088888",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "BP",
+                                        "value": "BP L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                    {
+                                        "productQualf": "ZM",
+                                        "value": "ZZ L7",
+                                        "productDescription": ""
+                                    },
+                                    
+                                ],
+                                "qty": [
+                                    
+                                    {
+                                        "type": "SHIP_QTY",
+                                        "value": 1,
+                                        "uom": "EA"
+                                    }
+                                    
+                                ]                                
+                            },
+                            
+                ],
+                
+                
+                "handlingUnits": {
+                    "huPallet": {
+                        
+                        "count": 2,
+                        "pallet": [
+                        
+                            {
+                                
+                                "palletId": "90308863320088917143A",
+                                "palletIdQualf": "SM",
+                                "count": 2,
+                                "carton": [
+                                    
+                                        {
+                                            
+                                            "cartonId": "00308863320088917167A",
+                                            "cartonIdQualf": "AA",
+                                            
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                            "ref": [
+                                                
+                                                        {
+                                                            "cartonQualf": "PJ",
+                                                            "value": "1234"
+                                                        },
+                                                        
+                                            ],
+                                            "contents": [
+                                                
+                                                        {
+                                                            "shipmentLineId": "1",
+                                                            "quantity": 16
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "2",
+                                                            "quantity": 13
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "3",
+                                                            "quantity": 32
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "4",
+                                                            "quantity": 51
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "5",
+                                                            "quantity": 9
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "6",
+                                                            "quantity": 85
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "7",
+                                                            "quantity": 1
+                                                        },
+                                                        
+                                            ]
+                                        },
+                                        
+                                        {
+                                            
+                                            "cartonId": "00308863320088917167B",
+                                            "cartonIdQualf": "AA",
+                                            
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                            "ref": [
+                                                
+                                                        {
+                                                            "cartonQualf": "PJ",
+                                                            "value": "1234"
+                                                        },
+                                                        
+                                            ],
+                                            "contents": [
+                                                
+                                                        {
+                                                            "shipmentLineId": "21",
+                                                            "quantity": 16
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "22",
+                                                            "quantity": 13
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "23",
+                                                            "quantity": 32
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "24",
+                                                            "quantity": 51
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "25",
+                                                            "quantity": 9
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "26",
+                                                            "quantity": 85
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "27",
+                                                            "quantity": 1
+                                                        },
+                                                        
+                                            ]
+                                        },
+                                        
+                                ]
+                            },
+                        
+                            {
+                                
+                                "palletId": "90308863320088917143B",
+                                "palletIdQualf": "SM",
+                                "count": 2,
+                                "carton": [
+                                    
+                                        {
+                                            
+                                            "cartonId": "00308863320088917167C",
+                                            "cartonIdQualf": "AA",
+                                            
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                            "ref": [
+                                                
+                                                        {
+                                                            "cartonQualf": "PJ",
+                                                            "value": "1234"
+                                                        },
+                                                        
+                                            ],
+                                            "contents": [
+                                                
+                                                        {
+                                                            "shipmentLineId": "141",
+                                                            "quantity": 16
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "142",
+                                                            "quantity": 13
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "143",
+                                                            "quantity": 32
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "144",
+                                                            "quantity": 51
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "145",
+                                                            "quantity": 9
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "146",
+                                                            "quantity": 85
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "147",
+                                                            "quantity": 1
+                                                        },
+                                                        
+                                            ]
+                                        },
+                                        
+                                        {
+                                            
+                                            "cartonId": "00308863320088917167D",
+                                            "cartonIdQualf": "AA",
+                                            
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                                "coo": "US",
+                                                
+                                            "ref": [
+                                                
+                                                        {
+                                                            "cartonQualf": "PJ",
+                                                            "value": "1234"
+                                                        },
+                                                        
+                                            ],
+                                            "contents": [
+                                                
+                                                        {
+                                                            "shipmentLineId": "251",
+                                                            "quantity": 16
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "252",
+                                                            "quantity": 13
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "253",
+                                                            "quantity": 32
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "254",
+                                                            "quantity": 51
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "255",
+                                                            "quantity": 9
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "256",
+                                                            "quantity": 85
+                                                        },
+                                                        
+                                                        {
+                                                            "shipmentLineId": "257",
+                                                            "quantity": 1
+                                                        },
+                                                        
+                                            ]
+                                        },
+                                        
+                                ]
+                            },
+                        
+                        ]
+                    },
+                    "huCarton": {
+                        
+                        "count": 2,
+                        "carton": [
+                        
+                            {
+                                
+                                "cartonId": "00308863320088917167E",
+                                "cartonIdQualf": "AA",
+                                
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                "ref": [
+                                    
+                                            {
+                                                "cartonQualf": "PJ",
+                                                "value": "1234"
+                                            },
+                                            
+                                ],
+                                "contents": [
+                                    
+                                            {
+                                                "shipmentLineId": "31",
+                                                "quantity": 16
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "32",
+                                                "quantity": 13
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "33",
+                                                "quantity": 32
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "34",
+                                                "quantity": 51
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "35",
+                                                "quantity": 9
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "36",
+                                                "quantity": 85
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "37",
+                                                "quantity": 1
+                                            },
+                                            
+                                ]
+                            },
+                            
+                            {
+                                
+                                "cartonId": "00308863320088917167F",
+                                "cartonIdQualf": "AA",
+                                
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "US",
+                                    
+                                    "coo": "IN",
+                                    
+                                "ref": [
+                                    
+                                            {
+                                                "cartonQualf": "PJ",
+                                                "value": "1234"
+                                            },
+                                            
+                                ],
+                                "contents": [
+                                    
+                                            {
+                                                "shipmentLineId": "41",
+                                                "quantity": 16
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "42",
+                                                "quantity": 13
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "43",
+                                                "quantity": 32
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "44",
+                                                "quantity": 51
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "45",
+                                                "quantity": 9
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "46",
+                                                "quantity": 85
+                                            },
+                                            
+                                            {
+                                                "shipmentLineId": "47",
+                                                "quantity": 1
+                                            },
+                                            
+                                ]
+                            },
+                            
+                        ]
+                        
+                    }
+                }
+            }
+        ]
+    }
+    

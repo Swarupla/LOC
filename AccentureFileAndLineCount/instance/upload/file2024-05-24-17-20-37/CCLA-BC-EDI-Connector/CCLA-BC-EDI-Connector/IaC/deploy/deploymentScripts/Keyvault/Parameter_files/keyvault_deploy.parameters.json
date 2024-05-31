@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "enabledForDeployment": { "value": false },
+    "enabledForDiskEncryption": { "value": false },
+    "enabledForTemplateDeployment": { "value": false },   
+    "keysPermissions": { "value": [ "list" ] },
+    "secretsPermissions": { "value": [ "list" ] },
+    "skuName": { "value": "premium" }    
+  }
+}

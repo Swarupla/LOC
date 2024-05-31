@@ -1,0 +1,608 @@
+trigger: none
+
+pool:
+  # name: 1ES-4node-T1
+  vmImage: ubuntu-latest
+  timeoutInMinutes: 360
+
+parameters:
+  - name: component
+    displayName: Component
+    type: string
+    default: SI
+    values:
+      - SI ## T1 Partner
+      - T2 ## T2 Partner
+
+  - name: env
+    displayName: Environment
+    type: string
+    default: SI
+    values:
+      - SI
+      - T2
+
+variables:
+  - ${{ if eq(parameters.env, 'SI')}}:
+      - group: lenovo_EDI_new
+  - ${{ if eq(parameters.env, 'T2')}}:
+      - group: samsung_EDI_SIT
+
+
+## Derived Variables ###
+  - template: Variable_files/derivedVariables.yml
+  
+  - name: integrationAccountparameterFilePath
+    value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/Integrationaccount/Parameter_files/${{parameters.component}}_to_lsp.Agreement.parameters.json"
+  - name: inBoundParameterFilePath
+    value: "$(Agent.BuildDirectory)/ediintegration-$(Build.BuildId)/InboundLogicapp/Parameter_files/${{parameters.component}}_Inbound_LogicApp.parameters.json"
+
+stages:
+  - stage: Build
+    jobs:
+      - job: build
+        steps:
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "src/main/edi/schema/x12/00401"
+              Contents: "**"
+              TargetFolder: "$(Agent.BuildDirectory)/schemas"
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "src/main/xslt/x12/00401"
+              Contents: "**"
+              TargetFolder: "$(Agent.BuildDirectory)/maps"
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "src/main/Storedprocedures"
+              Contents: "**"
+              TargetFolder: "$(Agent.BuildDirectory)/Storedprocedures"
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "deploy/deploymentScripts"
+              Contents: "**"
+              TargetFolder: "$(Agent.BuildDirectory)"
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Agent.BuildDirectory)"
+              ArtifactName: "ediintegration-$(Build.BuildId)"
+              publishLocation: "Container"
+
+          ## Function app tasks##
+          - task: AzurePowerShell@4
+            displayName: "Function app Config"
+            inputs:
+              azureSubscription: $(service-connection)
+              ScriptType: "FilePath"
+              ScriptPath: "$(UpdateConfigurations)"
+              ScriptArguments: "-servicebusQueuename $(servicebusQueuename)"
+              azurePowerShellVersion: LatestVersion
+          - task: UseNode@1
+            displayName: "Use Node 10.x"
+            inputs:
+              checkLatest: true
+          - task: Npm@0
+            displayName: "npm install"
+            inputs:
+              cwd: "src/main/listener/function-app"
+          - task: ArchiveFiles@2
+            displayName: "Archive function"
+            inputs:
+              rootFolderOrFile: "src/main/listener/function-app"
+              includeRootFolder: false
+              archiveFile: "$(Build.ArtifactStagingDirectory)/FunctionApp.zip"
+              verbose: true
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Artifact: Function code"
+            inputs:
+              ArtifactName: "zipdeploy_content"
+
+  - stage: Servicebus
+    dependsOn: Build
+    displayName: "Servicebus"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Servicebus"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(ServicebusTemplateFilePath)"
+                    overrideParameters: "-servicebusNamespace $(servicebusNamespace) -servicebusQueuename $(servicebusQueuename) -location $(location)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: CosmosDB
+    dependsOn: Build
+    displayName: "CosmosDB"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "CosmosDB"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(CosmosDBTemplateFilePath)"
+                    csmParametersFile: "$(CosmosDBParameterFilePath)"
+                    overrideParameters: "-cosmosDB_Name $(cosmosDB_Name) -CosmosDatabaseName $(CosmosDatabaseName) -cosmosDBprimaryRegion $(cosmosDBprimaryRegion) -cosmosDBsecondaryRegion $(cosmosDBsecondaryRegion)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+                - task: AzureCLI@2
+                  displayName: "CosmosDB Stored Procedures"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(CosmosDB_Storedprocedures)"
+                    ScriptArguments: "-resourcegroup_name $(resourcegroup_name) -cosmosDB_Name $(cosmosDB_Name) -CosmosDatabaseName $(CosmosDatabaseName) -buildId $(Build.BuildId) -Containers $(Containers)"
+
+  - stage: Functionapp
+    dependsOn: Servicebus
+    displayName: "Functionapp"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzurePowerShell@4
+                  displayName: "Function app Parameter"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptType: "FilePath"
+                    ScriptPath: "$(Functionapp_parameter)"
+                    ScriptArguments: "-resourcegroup_name $(resourcegroup_name) -cosmosDB_Name $(cosmosDB_Name) -servicebusNamespace $(servicebusNamespace) -servicebus_accesspolicy $(servicebus_accesspolicy) -Outboundlogicappname $(Outboundlogicappname)"
+                    azurePowerShellVersion: LatestVersion
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Functionapp"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(FunctionappTemplateFilePath)"
+                    overrideParameters: "-subscription_Id $(subscription_Id) -resourcegroup_name $(resourcegroup_name) -COSMOS_ACCOUNT_HOST $(COSMOS_ACCOUNT_HOST) -COSMOS_ACCOUNT_KEY $(COSMOS_ACCOUNT_KEY) -SERVICEBUS_CS $(SERVICEBUS_CS) -ACTIVITY_APP_ENDPOINT_OUTBOUND $(ACTIVITY_APP_ENDPOINT_OUTBOUND) -Functionapp_name $(Functionapp_name) -ServiceBusConnection__fullyQualifiedNamespace $(ServiceBusConnection__fullyQualifiedNamespace) -hostingPlanName $(hostingPlanName) -CosmosDatabaseName $(CosmosDatabaseName) -storageNamePrefix $(storageNamePrefix) -location $(location) -logAnalyticsWorkspace $(logAnalyticsWorkspace)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+                - task: AzureFunctionApp@1
+                  displayName: "Azure Functions Deploy: $Functionapp_name"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    appType: functionAppLinux
+                    appName: "$(Functionapp_name)"
+                    runtimeStack: "NODE|18"
+                    package: "$(FuncZipPath)"
+                    appSettings: '-FUNCTIONS_EXTENSION_VERSION ~4'
+
+                - task: AzureCLI@2
+                  displayName: "Function app Role assignment"
+                  condition: succeededOrFailed()
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(Servicebus_Roleassignment)"
+                    arguments: "-servicebusNamespace $(servicebusNamespace) -Functionapp_name $(Functionapp_name) -resourcegroup_name $(resourcegroup_name) -subscription_Id $(subscription_Id)"
+
+  - stage: IntegrationAccount
+    dependsOn: Servicebus
+    displayName: "IntegrationAccount"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzurePowerShell@4
+                  displayName: "Schemas and Maps push"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptPath: "$(schemascriptpath)"
+                    ScriptArguments: "-resourceGroupName $(resourcegroup_name) -integrationAccountName $(integrationaccount_name) -schemaName $(schema_names) -mapName $(map_names) -tenantId $(tenant_Id) -subscriptionId $(subscription_Id) -buildId $(Build.BuildId)"
+                    azurePowerShellVersion: LatestVersion
+                  enabled: true
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "MS Partners and Agreements push"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(integrationAccounttemplateFilePath)"
+                    csmParametersFile: "$(integrationAccountparameterFilePath)"
+                    overrideParameters: "-agreementName $(agreementName) -integrationaccount_name $(integrationaccount_name) -location $(location) -host_partnerqualifiervalue $(host_partnerqualifiervalue) -guest_partnername $(guest_partnername) -guest_partnerqualifiervalue $(guest_partnerqualifiervalue) -host_partnername $(host_partnername) -ediSenderID $(ediSenderID) -ediReceiverID $(ediReceiverID) -guest_partnerqualifier $(guest_partnerqualifier)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: SenderLogicApp
+    dependsOn: Servicebus
+    displayName: "Sender Logic App"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzurePowerShell@4
+                  displayName: "Create Basic Keyvault"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptType: "FilePath"
+                    ScriptPath: "$(Create_keyvault)"
+                    ScriptArguments: "-keyvaultname $(keyvaultname) -resourcegroup_name $(resourcegroup_name) -location $(location)"
+                    azurePowerShellVersion: LatestVersion
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Keyvault_API_Connection"
+                  condition: succeededOrFailed()
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(keyvaultAPIconnectionTemplateFilePath)"
+                    overrideParameters: "-Keyvault_id $(Keyvault_id) -keyvault_connection_name $(keyvault_connection_name) -keyvaultname $(keyvaultname)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Sender Logic App'"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(senderlogicappTemplateFilePath)"
+                    csmParametersFile: "$(senderlogicappParameterFilePath)"
+                    overrideParameters: "-OutboundEndpoint $(OutboundEndpoint) -documentdb_externalid $(documentdb_externalid) -cosmosDB_Name $(cosmosDB_Name) -Senderlogicappname $(Senderlogicappname) -CosmosDatabaseName $(CosmosDatabaseName) -location $(location) -oauth2_service_tokenEndpoint $(erp_oauth2_service_tokenEndpoint) -connections_keyvault_externalid $(connections_keyvault_externalid) -keyvault_id $(Keyvault_id) -keyvault_connection_name $(keyvault_connection_name)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+                
+                - task: AzureCLI@2
+                  displayName: "Keyvault_Role assignment"
+                  condition: succeededOrFailed()
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(Keyvault_Roleassignment)"
+                    arguments: "-logicappname $(Senderlogicappname) -keyvaultname $(keyvaultname) -resourcegroup_name $(resourcegroup_name) -subscription_Id $(subscription_Id)"
+
+  - stage: Generate_API_Token_logicapp
+    dependsOn: 
+     - Servicebus
+     - SenderLogicApp
+    displayName: "Generate_API_Token_logicapp"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Generate_API_Token_logicapp"
+                  condition: succeededOrFailed()
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(Generate_API_Token_logicappTemplateFilePath)"
+                    overrideParameters: "-Generate_API_logicappname $(Generate_API_logicappname) -connections_keyvault_externalid $(connections_keyvault_externalid) -keyvault_id $(keyvault_id) -HTTP_Genarate_token_uri $(HTTP_Genarate_token_uri) -location $(location) -keyvault_connection_name $(keyvault_connection_name)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+                - task: AzureCLI@2
+                  displayName: "Keyvault_Role assignment"
+                  condition: succeededOrFailed()
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(Keyvault_Roleassignment)"
+                    arguments: "-logicappname $(Generate_API_logicappname) -keyvaultname $(keyvaultname) -resourcegroup_name $(resourcegroup_name) -subscription_Id $(subscription_Id)"
+
+  - stage: Keyvault
+    dependsOn: Generate_API_Token_logicapp
+    displayName: "Keyvault"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: "Taking objectId of Logic app"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(Accesspolicy)"
+                    arguments: "-Generate_API_logicappname $(Generate_API_logicappname) -resourcegroup_name $(resourcegroup_name)"
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Keyvault"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(keyvaultTemplateFilePath)"
+                    csmParametersFile: "$(keyvaultParameterFilePath)"
+                    overrideParameters: "-keyvaultname $(keyvaultname) -objectId $(objectId) -secretName_ClientId $(secretName_ClientId) -secretValue_ClientId $(secretValue_ClientId) -secretName_ClientSecret $(secretName_ClientSecret) -secretValue_ClientSecret $(secretValue_ClientSecret) -logAnalyticsWorkspace $(logAnalyticsWorkspace) -oauth2_service_clientId $(oauth2_service_clientId) -oauth2_service_clientSecret $(oauth2_service_clientSecret)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: CosmosDBSQLROLEAssignment
+    dependsOn:
+      - OutboundLogicApp
+      - CosmosDB
+      - Functionapp
+      - SenderLogicApp
+      - AckOutboundLogicapp
+    displayName: "CosmosDB SQL ROLE Assignment"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: "CosmosDB Sql Role assignment"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(CosmosDB_SQLRoleassignment)"
+                    ScriptArguments: "-resourcegroup_name $(resourcegroup_name) -Senderlogicappname $(Senderlogicappname) -Outboundlogicappname $(Outboundlogicappname) -Acklogicappname $(Acklogicappname) -Functionapp_name $(Functionapp_name) -cosmosDB_Name $(cosmosDB_Name) -CosmosDB_scope $(CosmosDB_scope) -roledefinitionid $(roledefinitionid)"
+
+  - stage: AckOutboundLogicapp
+    dependsOn: OutboundLogicApp
+    displayName: "AckOutboundLogicapp"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "AckOutboundLogicapp"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(AckOutboundTemplateFilePath)"
+                    overrideParameters: "-cosmosDB_Name $(cosmosDB_Name) -Acklogicappname $(Acklogicappname) -CosmosDatabaseName $(CosmosDatabaseName) -location $(location) -documentdb_externalid $(documentdb_externalid) -connections_x12_externalid $(connections_x12_externalid)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: InboundLogicApp
+    dependsOn:
+      - IntegrationAccount
+      - SenderLogicApp
+    displayName: "InboundLogicApp"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "InboundLogicApp"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(inBoundTemplateFilePath)"
+                    csmParametersFile: "$(inBoundParameterFilePath)"
+                    overrideParameters: "-inboundlogicappname $(inboundlogicappname) -token_LogicAppID $(token_LogicAppID) -sender_LogicappID $(sender_LogicappID) -LogicAppIntegrationAccount $(LogicAppIntegrationAccount) -APIHost $(APIHost) -location $(location) -cosmosDB_Name $(cosmosDB_Name) -Senderlogicappname $(Senderlogicappname) -agreementName $(agreementName)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: APIM
+    dependsOn:
+      - InboundLogicApp
+      - AckOutboundLogicapp
+    displayName: "APIM"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzurePowerShell@4
+                  displayName: "Taking InboundLogicApp and Acklogicapp Details"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptType: "FilePath"
+                    ScriptPath: "$(logicappdetails)"
+                    ScriptArguments: "-inboundlogicappname $(inboundlogicappname) -resourcegroup_name $(resourcegroup_name) -Acklogicappname $(Acklogicappname)"
+                    azurePowerShellVersion: LatestVersion
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "APIM"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(apimTemplateFilePath)"
+                    overrideParameters: "-Apimname $(Apimname) -publisherEmail $(publisherEmail) -inboundlogicappname $(inboundlogicappname) -Acklogicappname $(Acklogicappname) -ack_serviceUrl_accessEndpoint $(ack_serviceUrl_accessEndpoint) -ack_Logicapp_access_key_value $(ack_Logicapp_access_key_value) -ack_logicapp_id $(ack_logicapp_id) -inbound_logicapp_id $(inbound_logicapp_id) -serviceUrl_accessEndpoint $(serviceUrl_accessEndpoint) -Logicapp_access_key_value $(Logicapp_access_key_value) -oauth2_service_authorizationEndpoint $(oauth2_service_authorizationEndpoint) -oauth2_service_clientId $(oauth2_service_clientId) -oauth2_service_clientSecret $(oauth2_service_clientSecret) -oauth2_service_tokenEndpoint $(oauth2_service_tokenEndpoint) -location $(location) -tenantID $(tenant_Id) -openid_config_url $(openid_config_url)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+                - task: AzureCLI@2
+                  displayName: 'Uploading APIM Sub key to Keyvault'
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: bash
+                    scriptPath: $(APIM_Subkey)
+                    arguments: '$(subscription_Id) $(resourcegroup_name) $(Apimname) $(keyvaultname)'
+                    addSpnToEnvironment: true 
+
+                - task: AzurePowerShell@4
+                  displayName: "Taking APIM IP Address"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptType: "FilePath"
+                    ScriptPath: "$(Apim_ipaddress)"
+                    ScriptArguments: "-Apimname $(Apimname) -resourcegroup_name $(resourcegroup_name)"
+                    azurePowerShellVersion: LatestVersion
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "InboundLogicAppIpwhitelist"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(inBound_IpwhitelistTemplateFilePath)"
+                    csmParametersFile: "$(inBoundParameterFilePath)"
+                    overrideParameters: "-inboundlogicappname $(inboundlogicappname) -token_LogicAppID $(token_LogicAppID) -sender_LogicappID $(sender_LogicappID) -LogicAppIntegrationAccount $(LogicAppIntegrationAccount) -APIHost $(APIHost) -APIM_IPaddress $(APIM_IPaddress) -location $(location) -cosmosDB_Name $(cosmosDB_Name) -Senderlogicappname $(Senderlogicappname) -agreementName $(agreementName)"
+                    deploymentMode: "Incremental"
+                  enabled: true             
+
+  - stage: OutboundLogicApp
+    dependsOn:
+      - Functionapp
+      - SenderLogicApp
+    displayName: "OutboundLogicApp"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "OutboundLogicApp"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(outBoundTemplateFilePath)"
+                    csmParametersFile: "$(outBoundParameterFilePath)"
+                    overrideParameters: "-APIHost $(APIHost) -agreementName $(agreementName) -Outboundlogicappname $(Outboundlogicappname) -CosmosDatabaseName $(CosmosDatabaseName) -cosmosDB_Name $(cosmosDB_Name) -location $(location) -Token_LogicAppid $(Token_LogicAppid) -Sender_logicappId $(Sender_logicappId) -LogicAppIntegrationAccount $(LogicAppIntegrationAccount) -documentdb_externalid $(documentdb_externalid) -connections_x12_externalid $(connections_x12_externalid)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+                
+                - task: AzureCLI@2
+                  displayName: 'Updating Outbound logic app Workflow settings'
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: bash
+                    scriptPath: $(Functionapp_whitelist)
+                    arguments: '$(SubscriptionId) $(resourcegroup_name) $(Outboundlogicappname) $(Functionapp_name)'
+                    addSpnToEnvironment: true
+
+                - task: AzurePowerShell@4
+                  displayName: "Function app Parameter"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    ScriptType: "FilePath"
+                    ScriptPath: "$(Functionapp_parameter)"
+                    ScriptArguments: "-resourcegroup_name $(resourcegroup_name) -cosmosDB_Name $(cosmosDB_Name) -servicebusNamespace $(servicebusNamespace) -servicebus_accesspolicy $(servicebus_accesspolicy) -Outboundlogicappname $(Outboundlogicappname)"
+                    azurePowerShellVersion: LatestVersion
+
+                - task: AzureResourceManagerTemplateDeployment@3
+                  displayName: "Updating the Functionapp"
+                  inputs:
+                    deploymentScope: "Resource Group"
+                    azureResourceManagerConnection: $(service-connection)
+                    subscriptionId: $(subscription_Id)
+                    action: "Create Or Update Resource Group"
+                    resourceGroupName: $(resourcegroup_name)
+                    location: "East US"
+                    templateLocation: "Linked artifact"
+                    csmFile: "$(FunctionappTemplateFilePath)"
+                    overrideParameters: "-subscription_Id $(subscription_Id) -resourcegroup_name $(resourcegroup_name) -COSMOS_ACCOUNT_HOST $(COSMOS_ACCOUNT_HOST) -COSMOS_ACCOUNT_KEY $(COSMOS_ACCOUNT_KEY) -SERVICEBUS_CS $(SERVICEBUS_CS) -ACTIVITY_APP_ENDPOINT_OUTBOUND $(ACTIVITY_APP_ENDPOINT_OUTBOUND) -Functionapp_name $(Functionapp_name) -ServiceBusConnection__fullyQualifiedNamespace $(ServiceBusConnection__fullyQualifiedNamespace) -hostingPlanName $(hostingPlanName) -CosmosDatabaseName $(CosmosDatabaseName) -storageNamePrefix $(storageNamePrefix) -location $(location) -logAnalyticsWorkspace $(logAnalyticsWorkspace)"
+                    deploymentMode: "Incremental"
+                  enabled: true
+
+  - stage: EventGridTopicsubscription
+    dependsOn: Servicebus
+    displayName: "EventGridTopic subscription"
+    jobs:
+      - deployment:
+        environment: $(adoEnv)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: "Event_Grid_Subsctiption"
+                  inputs:
+                    azureSubscription: $(service-connection)
+                    scriptType: "pscore"
+                    scriptLocation: "scriptPath"
+                    scriptPath: "$(Event_Grid_Subsctiption)"
+                    ScriptArguments: "-Event_resourcegroup_name $(Event_resourcegroup_name) -EventSubscriptionName $(EventSubscriptionName) -EventEndpoint $(EventEndpoint) -Topic $(Topic) -Eventfilter $(Eventfilter)"

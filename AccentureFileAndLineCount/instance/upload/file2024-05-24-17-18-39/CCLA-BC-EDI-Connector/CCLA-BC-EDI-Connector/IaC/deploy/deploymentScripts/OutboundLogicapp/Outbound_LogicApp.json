@@ -1,0 +1,740 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Outboundlogicappname": {
+      "type": "String"
+    },
+    "location": {
+      "type": "string"
+    },
+    "LogicAppIntegrationAccount": {
+      "type": "String"
+    },
+    "Token_LogicAppid": {
+      "type": "String"
+    },
+    "Sender_logicappId": {
+      "type": "String"
+    },
+    "x12_Connection_DisplayName": {
+      "type": "string"
+    },
+    "EventList": {
+      "type": "array"
+    },
+    "agreementName": {
+      "type": "string"
+    },
+    "documentdb_externalid": {
+      "type": "String"
+    },
+    "documentdb_Connection_DisplayName": {
+      "type": "string"
+    },
+    "connections_x12_externalid": {
+      "type": "String"
+    },
+    "cosmosDB_Name": {
+      "type": "string"
+    },
+    "CosmosDatabaseName": {
+      "type": "string"
+    },
+    // "Ipaddress1": {
+    //   "type": "string"
+    // },
+
+    "APIHost": {
+      "type": "string"
+    },
+    "CosmosSPName": {
+      "type": "string"
+    },
+    "DefaultCollection": {
+      "type": "string"
+    },
+    "DefaultHistoryCollection": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('Outboundlogicappname')]",
+            "location": "[parameters('location')]",
+            "tags": {
+                "displayName": "LogicApp"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+           "dependsOn": [
+            "[resourceId('Microsoft.Web/connections', 'x12')]",
+            "[resourceId('Microsoft.Web/connections', 'documentdb')]"
+          ],
+            "properties": {
+                "state": "Enabled",
+                "integrationAccount": {
+                    "id": "[parameters('LogicAppIntegrationAccount')]"
+                },
+                "accessControl": {
+          "triggers": {
+            "allowedCallerIpAddresses": []
+             },
+          "actions": {
+            "allowedCallerIpAddresses": []
+           } 
+      },
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        },
+                        "APIHost": {
+                            "defaultValue": "[parameters('APIHost')]",
+                            "type": "String"
+                        },
+                        "AllowSend": {
+                            "defaultValue": true,
+                            "type": "Bool"
+                        },
+                        "CosmosAccountName": {
+                            "defaultValue": "[parameters('cosmosDB_Name')]",
+                            "type": "String"
+                        },
+                        "CosmosDBName": {
+                            "defaultValue": "[parameters('CosmosDatabaseName')]",
+                            "type": "String"
+                        },
+                        "CosmosSPName": {
+                            "defaultValue": "[parameters('CosmosSPName')]",
+                            "type": "String"
+                        },
+                        "DefaultCollection": {
+                            "defaultValue": "[parameters('DefaultCollection')]",
+                            "type": "String"
+                        },
+                        "DefaultHistoryCollection": {
+                            "defaultValue": "[parameters('DefaultHistoryCollection')]",
+                            "type": "String"
+                        },
+                        "EventList": {
+                            "defaultValue": "[parameters('EventList')]",
+                             "type": "Array"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Condition_Main": {
+                            "actions": {
+                                "Catch-Common": {
+                                    "actions": {
+                                        "Compose_Status_Error": {
+                                            "runAfter": {
+                                                "Set_ErrorMessage": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Compose",
+                                            "inputs": {
+                                                "statusCode": 5
+                                            }
+                                        },
+                                        "Filter_array": {
+                                            "runAfter": {},
+                                            "type": "Query",
+                                            "inputs": {
+                                                "from": "@result('Try-Common')",
+                                                "where": "@equals(item()?['status'], 'Failed')"
+                                            }
+                                        },
+                                        "Set_ErrorMessage": {
+                                            "runAfter": {
+                                                "Filter_array": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "ErrorMessage",
+                                                "value": "@{body('Filter_array')?[0]?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['error']?['message']}@{body('Filter_array')?[0]?['outputs']?['body']?['errorMessage']}"
+                                            }
+                                        },
+                                        "Set_variable_DbParameters1": {
+                                            "runAfter": {
+                                                "Compose_Status_Error": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "DbParameters",
+                                                "value": [
+                                                    "@{outputs('Filter_array_event_supported')?['body']?[0]?['code']}|@{triggerBody()['data']['objectId']}",
+                                                    "@{outputs('Compose_Status_Error')}",
+                                                    0
+                                                ]
+                                            }
+                                        },
+                                        "Update_History_DB_-_Error": {
+                                            "runAfter": {
+                                                "Update_Main_DB_-_Error": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "body": "@{variables('DbParameters')}",
+                                                "headers": {
+                                                    "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Encode_to_X12_message_by_agreement_name')['body']['functionalGroupEnvelope']['gS01']}\""
+                                                },
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDBName'))}/colls/@{encodeURIComponent(parameters('DefaultHistoryCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                                            }
+                                        },
+                                        "Update_Main_DB_-_Error": {
+                                            "runAfter": {
+                                                "Set_variable_DbParameters1": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "body": "@{variables('DbParameters')}",
+                                                "headers": {
+                                                    "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Encode_to_X12_message_by_agreement_name')['body']['functionalGroupEnvelope']['gS01']}\""
+                                                },
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDBName'))}/colls/@{encodeURIComponent(parameters('DefaultCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Try-Common": [
+                                            "Failed",
+                                            "TimedOut"
+                                        ]
+                                    },
+                                    "type": "Scope"
+                                },
+                                "Try-Common": {
+                                    "actions": {
+                                        "Compose_Status_Processed": {
+                                            "runAfter": {
+                                                "Encode_to_X12_message_by_agreement_name": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Compose",
+                                            "inputs": {
+                                                "statusCode": 1
+                                            }
+                                        },
+                                        "Encode_to_X12_message_by_agreement_name": {
+                                            "runAfter": {
+                                                "Transform_JSON_to_XML": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "body": "@body('Transform_JSON_to_XML')",
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['x12']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "path": "/encode/resolvebyname",
+                                                "queries": {
+                                                    "agreementName": "[parameters('agreementName')]"
+                                                }
+                                            }
+                                        },
+                                        "Join_participants": {
+                                            "runAfter": {},
+                                            "type": "Join",
+                                            "inputs": {
+                                                "from": "@triggerBody()['data']['parties']",
+                                                "joinWith": "&participants="
+                                            }
+                                        },
+                                        "Set_variable_DbParameters": {
+                                            "runAfter": {
+                                                "EDI-Sender": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "DbParameters",
+                                                "value": [
+                                                    "@{outputs('Filter_array_event_supported')?['body']?[0]?['code']}|@{triggerBody()['data']['objectId']}",
+                                                    "@{outputs('Compose_Status_Processed')}",
+                                                    0
+                                                ]
+                                            }
+                                        },
+                                        "Switch": {
+                                            "runAfter": {
+                                                "EDI-Generate-API-Token": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "cases": {
+                                                "Case_Delete": {
+                                                    "case": "D",
+                                                    "actions": {
+                                                        "Set_JSONOutput_Delete": {
+                                                            "runAfter": {},
+                                                            "type": "SetVariable",
+                                                            "inputs": {
+                                                                "name": "JsonData",
+                                                                "value": {
+                                                                    "result": {
+                                                                        "data": {
+                                                                            "createdBy": "@triggerBody()?['data']?['postingParty']",
+                                                                            "id": "@triggerBody()?['data']?['objectId']",
+                                                                            "invNumber": "@triggerBody()?['data']?['objectId']",
+                                                                            "isDelete": true,
+                                                                            "shipmentDetails": [
+                                                                                {
+                                                                                    "mode": "M"
+                                                                                }
+                                                                            ],
+                                                                            "shipmentNumber": "@triggerBody()?['data']?['objectId']",
+                                                                            "shipmentType": "S",
+                                                                            "type": "SA"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "default": {
+                                                "actions": {
+                                                    "Catch-Get": {
+                                                        "actions": {
+                                                            "Filter_array_get": {
+                                                                "runAfter": {},
+                                                                "type": "Query",
+                                                                "inputs": {
+                                                                    "from": "@result('Try-Get')",
+                                                                    "where": "@equals(item()?['status'], 'Failed')"
+                                                                }
+                                                            },
+                                                            "Set_variable_get_error": {
+                                                                "runAfter": {
+                                                                    "Filter_array_get": [
+                                                                        "Succeeded"
+                                                                    ]
+                                                                },
+                                                                "type": "SetVariable",
+                                                                "inputs": {
+                                                                    "name": "ErrorMessage",
+                                                                    "value": "@{body('Filter_array_get')?[0]?['error']?['message']}@{body('Filter_array_get')?[0]?['outputs']?['body']?['error']?['message']}"
+                                                                }
+                                                            }
+                                                        },
+                                                        "runAfter": {
+                                                            "Try-Get": [
+                                                                "TimedOut",
+                                                                "Failed"
+                                                            ]
+                                                        },
+                                                        "type": "Scope"
+                                                    },
+                                                    "Try-Get": {
+                                                        "actions": {
+                                                            "HTTP-GetDetails": {
+                                                                "runAfter": {},
+                                                                "type": "Http",
+                                                                "inputs": {
+                                                                    "headers": {
+                                                                        "Authorization": "Bearer @{outputs('EDI-Generate-API-Token')['body']['access_token']}",
+                                                                        "accept": "application/json"
+                                                                    },
+                                                                    "method": "GET",
+                                                                    "uri": "@{parameters('APIHost')}/api/@{outputs('Filter_array_event_supported')?['body']?[0]?['container']}/@{triggerBody()['data']['objectId']}?participants=@{body('Join_participants')}"
+                                                                }
+                                                            },
+                                                            "Set_JSONOutput": {
+                                                                "runAfter": {
+                                                                    "HTTP-GetDetails": [
+                                                                        "Succeeded"
+                                                                    ]
+                                                                },
+                                                                "type": "SetVariable",
+                                                                "inputs": {
+                                                                    "name": "JsonData",
+                                                                    "value": {
+                                                                        "result": {
+                                                                            "data": "@outputs('HTTP-GetDetails')?['body']?['data']?['result']?[0]",
+                                                                            "isUpdate": false
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "runAfter": {},
+                                                        "type": "Scope"
+                                                    }
+                                                }
+                                            },
+                                            "expression": "@outputs('Filter_array_event_supported')?['body']?[0]?['code']",
+                                            "type": "Switch"
+                                        },
+                                        "EDI-Generate-API-Token": {
+                                            "runAfter": {
+                                                "Join_participants": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Workflow",
+                                            "inputs": {
+                                                "body": {},
+                                                "host": {
+                                                    "triggerName": "manual",
+                                                    "workflow": {
+                                                        "id": "[parameters('Token_LogicAppid')]"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "EDI-Sender": {
+                                            "runAfter": {
+                                                "Compose_Status_Processed": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Workflow",
+                                            "inputs": {
+                                                "body": {
+                                                    "allowSend": "@parameters('AllowSend')",
+                                                    "collectionName": "@outputs('Filter_array_event_supported')?['body']?[0]?['container']",
+                                                    "edi": {
+                                                        "groupControlNumber": "@outputs('Encode_to_X12_message_by_agreement_name')?['body']?['GroupControlNumber']",
+                                                        "transactionSetControlNumber": "@outputs('Encode_to_X12_message_by_agreement_name')?['body']?['TransactionSetControlNumber']"
+                                                    },
+                                                    "eventType": "@triggerBody()['eventType']",
+                                                    "id": "@triggerBody()['data']['objectId']",
+                                                    "partitionKey": "@outputs('Encode_to_X12_message_by_agreement_name')['body']['functionalGroupEnvelope']['gS01']",
+                                                    "payload": "@outputs('Encode_to_X12_message_by_agreement_name')?['body']?['Payload']",
+                                                    "source": "outbound"
+                                                },
+                                                "host": {
+                                                    "triggerName": "manual",
+                                                    "workflow": {
+                                                        "id": "[parameters('Sender_logicappId')]"
+                                                    }
+                                                }
+                                            },
+                                            "operationOptions": "DisableAsyncPattern"
+                                        },
+                                        "Transform_JSON_to_XML": {
+                                            "runAfter": {
+                                                "Switch": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Xslt",
+                                            "inputs": {
+                                                "content": "@{xml(variables('JsonData'))}",
+                                                "integrationAccount": {
+                                                    "map": {
+                                                        "name": "@{outputs('Filter_array_event_supported')?['body']?[0]?['mapper']}"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Update_History_DB_-_Processed": {
+                                            "runAfter": {
+                                                "Update_Main_DB_-_Processed": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "body": "@{variables('DbParameters')}",
+                                                "headers": {
+                                                    "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Encode_to_X12_message_by_agreement_name')['body']['functionalGroupEnvelope']['gS01']}\""
+                                                },
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDBName'))}/colls/@{encodeURIComponent(parameters('DefaultHistoryCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                                            }
+                                        },
+                                        "Update_Main_DB_-_Processed": {
+                                            "runAfter": {
+                                                "Set_variable_DbParameters": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "body": "@{variables('DbParameters')}",
+                                                "headers": {
+                                                    "x-ms-documentdb-raw-partitionkey": "\"@{outputs('Encode_to_X12_message_by_agreement_name')['body']['functionalGroupEnvelope']['gS01']}\""
+                                                },
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "path": "/v2/cosmosdb/@{encodeURIComponent(parameters('CosmosAccountName'))}/dbs/@{encodeURIComponent(parameters('CosmosDBName'))}/colls/@{encodeURIComponent(parameters('DefaultCollection'))}/sprocs/@{encodeURIComponent(parameters('CosmosSPName'))}"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Scope"
+                                }
+                            },
+                            "runAfter": {
+                                "Filter_array_event_supported": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "else": {
+                                "actions": {
+                                    "Set_variable": {
+                                        "runAfter": {},
+                                        "type": "SetVariable",
+                                        "inputs": {
+                                            "name": "ErrorMessage",
+                                            "value": "Event is not supported"
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@triggerBody()",
+                                                "@null"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@triggerBody()['data']",
+                                                "@null"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@triggerBody()['data']['objectId']",
+                                                "@null"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@body('Filter_array_event_supported')",
+                                                "@null"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "not": {
+                                            "equals": [
+                                                "@outputs('Filter_array_event_supported')?['body']?[0]?['code']",
+                                                "@null"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "Condition_Operation_Success": {
+                            "actions": {},
+                            "runAfter": {
+                                "Condition_Main": [
+                                    "Succeeded",
+                                    "Skipped"
+                                ]
+                            },
+                            "else": {
+                                "actions": {
+                                    "Terminate": {
+                                        "runAfter": {},
+                                        "type": "Terminate",
+                                        "inputs": {
+                                            "runError": {
+                                                "code": "400",
+                                                "message": "@variables('ErrorMessage')"
+                                            },
+                                            "runStatus": "Failed"
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "equals": [
+                                            "@variables('ErrorMessage')",
+                                            ""
+                                        ]
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "Filter_array_event_supported": {
+                            "runAfter": {
+                                "Initialize_variable_ErrorMessage": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Query",
+                            "inputs": {
+                                "from": "@parameters('EventList')",
+                                "where": "@equals(item()?['eventName'], triggerBody()?['eventType'])"
+                            }
+                        },
+                        "Initialize_variable_DbParameters": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "DbParameters",
+                                        "type": "array",
+                                        "value": []
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_variable_ErrorMessage": {
+                            "runAfter": {
+                                "Initialize_variable_JSONOutput": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "ErrorMessage",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_variable_JSONOutput": {
+                            "runAfter": {
+                                "Initialize_variable_DbParameters": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "JsonData",
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "documentdb": {
+                                "connectionId": "[parameters('documentdb_externalid')]",
+                                "connectionName": "documentdb",
+                                "connectionProperties": {
+                                    "authentication": {
+                                        "type": "ManagedServiceIdentity"
+                                    }
+                                },
+                                "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'documentdb')]"
+                            },
+                            "x12": {
+                                "connectionId": "[parameters('connections_x12_externalid')]",
+                                "connectionName": "x12",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/', 'x12')]"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2018-07-01-preview",
+      "name": "documentdb",
+      "location": "[parameters('location')]",
+      "kind": "V1",
+      "properties": {
+        "api": {
+          "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'documentdb')]"
+        },
+        "customParameterValues": {},
+        "displayName": "[parameters('documentdb_Connection_DisplayName')]",
+        "parameterValueSet": {
+          "name": "managedIdentityAuth",
+          "values": {}
+        }
+       }
+     },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2018-07-01-preview",
+      "name": "x12",
+      "location": "[parameters('location')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/', 'x12')]"
+        },
+        "displayName": "[parameters('x12_Connection_DisplayName')]",
+        "parameterValues": {
+          "integrationAccountId": "[parameters('LogicAppIntegrationAccount')]",
+          "integrationAccountUrl": "[listCallbackURL(parameters('LogicAppIntegrationAccount'), '2015-08-01-preview').value]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+} 

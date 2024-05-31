@@ -1,0 +1,195 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Generate_API_logicappname": {
+      "type": "String"
+    },
+    "connections_keyvault_externalid": {
+      "type": "String"
+    },
+    "location": {
+      "type": "string"
+    },
+    "keyvault_connection_name": {
+      "type": "string"
+    },
+    "keyvault_id": {
+      "type": "string"
+    },
+    "HTTP_Genarate_token_uri": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [   
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "[parameters('Generate_API_logicappname')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "actions": {
+            "Get_secret_BlockchainAPIClientId": {
+              "runAfter": {
+                "Get_secret_BlockchainAPIClientSecret": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['keyvault']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/secrets/@{encodeURIComponent('BlockchainAPIClientId')}/value"
+              },
+              "runtimeConfiguration": {
+                "secureData": {
+                  "properties": [
+                    "outputs"
+                  ]
+                }
+              }
+            },
+            "Get_secret_BlockchainAPIClientSecret": {
+              "runAfter": {},
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['keyvault']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/secrets/@{encodeURIComponent('BlockchainAPIClientSecret')}/value"
+              },
+              "runtimeConfiguration": {
+                "secureData": {
+                  "properties": [
+                    "outputs"
+                  ]
+                }
+              }
+            },
+            "HTTP_Genarate_token": {
+              "runAfter": {
+                "Get_secret_BlockchainAPIClientId": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Http",
+              "inputs": {
+                "body": {
+                  "$content-type": "multipart/form-data",
+                  "$multipart": [
+                    {
+                      "body": "client_credentials",
+                      "headers": {
+                        "Content-Disposition": "form-data; name=\"grant_type\""
+                      }
+                    },
+                    {
+                      "body": "@body('Get_secret_BlockchainAPIClientId')?['value']",
+                      "headers": {
+                        "Content-Disposition": "form-data; name=\"client_id\""
+                      }
+                    },
+                    {
+                      "body": "@body('Get_secret_BlockchainAPIClientSecret')?['value']",
+                      "headers": {
+                        "Content-Disposition": "form-data; name=\"client_secret\""
+                      }
+                    },
+                    {
+                      "body": "api://@{body('Get_secret_BlockchainAPIClientId')?['value']}/.default",
+                      "headers": {
+                        "Content-Disposition": "form-data; name=\"scope\""
+                      }
+                    }
+                  ]
+                },
+                "headers": {
+                  "Content-Type": "multipart/form-data"
+                },
+                "method": "POST",
+                "uri": "[parameters('HTTP_Genarate_token_uri')]"
+              },
+              "runtimeConfiguration": {
+                "secureData": {
+                  "properties": [
+                    "outputs"
+                  ]
+                }
+              }
+            },
+            "Response": {
+              "runAfter": {
+                "HTTP_Genarate_token": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "body": "@body('HTTP_Genarate_token')",
+                "statusCode": 200
+              },
+              "operationOptions": "Asynchronous"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "keyvault": {
+                "connectionId": "[parameters('connections_keyvault_externalid')]",
+                "connectionName": "[parameters('keyvault_connection_name')]",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity"
+                  }
+                },
+                "id": "[parameters('keyvault_id')]"
+              }
+            }
+          }
+        },
+        "accessControl": {
+          "triggers": {
+            "allowedCallerIpAddresses": []
+          },
+          "actions": {
+            "allowedCallerIpAddresses": []
+          }
+        }
+      }
+    }
+
+  ]
+}
